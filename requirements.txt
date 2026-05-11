@@ -1,0 +1,11 @@
+numpy>=1.26
+torch>=2.2
+transformers==4.45.1
+datasets>=2.18
+evaluate>=0.4.3
+scikit-learn>=1.5
+accelerate>=0.34
+peft>=0.17
+wandb>=0.18
+pyyaml
+safetensors
