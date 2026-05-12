@@ -48,15 +48,7 @@ from peft import (
 )
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 from transformers.utils import send_example_telemetry
-try:
-    from baselines.lora_xs.initialization_utils import find_and_initialize
-except ImportError:
-    find_and_initialize = None
 
-try:
-    from baselines.psoft.psoft_layers import create_and_insert
-except ImportError:
-    create_and_insert = None
 
 
 from baselines.loft.loft_layers import create_and_insert_loft_fixedP
@@ -793,54 +785,9 @@ def main():
             target_modules=peft_inserted_modules,
         )
     elif peft_name == 'lora_xs':
-        if find_and_initialize is None:
-            raise ImportError("LoRA-XS is not included in this minimal LOFT release. Please use --peft_name loft for the released LOFT experiments.")
-        config = LoraConfig(
-            r=peft_rank,
-            lora_alpha=peft_rank,
-            lora_dropout=peft_dropout,
-            target_modules=peft_inserted_modules,
-            task_type=task_type,
-        )
-        adapter_name = "default"
-        peft_config_dict = {}
-        if not isinstance(config, PromptLearningConfig):
-            peft_config_dict[adapter_name] = config
-
-        with open("../baselines/lora_xs/config/reconstruct_config.yaml", "r") as stream:
-            reconstr_config = yaml.load(stream, Loader=yaml.FullLoader)
-        reconstr_type = reconstr_config["reconstruction_type"]
-        reconstr_config[reconstr_type]["rank"] = peft_config_dict[adapter_name].r
-
-        model = get_peft_model(model, config)
-
-        find_and_initialize(
-            model,
-            peft_config_dict,
-            adapter_name=adapter_name,
-            reconstr_type=reconstr_type,
-            reconstruct_config=reconstr_config,
-        )
-
+        raise ImportError("LoRA-XS baseline implementation is not included in this LOFT code release. Please use --peft_name loft.")
     elif peft_name == 'psoft':
-        if create_and_insert is None:
-            raise ImportError("psoft is not included in this minimal LOFT release. Please use --peft_name loft for the released LOFT experiments.")
-        config = LoraConfig(
-            r=peft_rank,
-            lora_alpha=peft_rank,
-            lora_dropout=peft_dropout,
-            target_modules=peft_inserted_modules,
-            task_type=task_type,
-            init_lora_weights='pissa',
-            # init_lora_weights = 'pissa_niter_20',  # Using Fast-SVD，'pissa_niter_[number of iters]'` initiates Fast-SVD-based PiSSA initialization
-        )
-        print("PiSSA is Baking... (PiSSA initializing will take a while.)")
-        model = get_peft_model(model, config)
-        create_and_insert(model, config, psoft_orth, psoft_mag_out, psoft_mag_b, psoft_mag_a, psoft_use_cayley_neumann, psoft_num_cayley_neumann_terms)
-
-        check_lora_A_row_orthogonality(model)
-
-
+        raise ImportError("PSOFT baseline implementation is not included in this LOFT code release. Please use --peft_name loft.")
     elif peft_name == "loft":
         # 1) 先用 LoRAConfig 把目标 Linear 替换成 peft.tuners.lora.Linear，作为“载体”
         config = LoraConfig(

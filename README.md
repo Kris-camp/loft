@@ -2,14 +2,12 @@
 
 This repository contains the code release for LOFT. The current initial release includes the GLUE experiments with DeBERTaV3-base, and additional experiment components may be added in future updates.
 
-The repository currently keeps the GLUE training entry point and the shared LOFT/PEFT components required by the GLUE experiments. Other experiment code can be added later under the same repository.
+The repository currently keeps the GLUE training entry point and the LOFT components required by the GLUE experiments. Other experiment code can be added later under the same repository.
 
 ## Contents
 
 - run_glue.py: GLUE / encoder-side training entry point.
 - baselines/loft/: LOFT layer implementation.
-- baselines/psoft/: shared PEFT baseline components kept for compatibility.
-- baselines/lora_xs/: shared PEFT baseline utilities kept for compatibility.
 - scripts/example_glue.sh: example GLUE launch command.
 - requirements.txt: Python dependencies for GLUE experiments.
 
