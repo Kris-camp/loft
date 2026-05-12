@@ -1,8 +1,8 @@
-# LOFT GLUE Code Release
+# LOFT Code Release
 
-This repository contains the GLUE-only code release for LOFT experiments with DeBERTaV3-base.
+This repository contains the code release for LOFT. The current initial release includes the GLUE experiments with DeBERTaV3-base, and additional experiment components may be added in future updates.
 
-VTAB and mathematical-reasoning code are intentionally excluded from this repository. This release keeps the GLUE training entry point and the shared LOFT/PEFT components required by the GLUE experiments.
+The repository currently keeps the GLUE training entry point and the shared LOFT/PEFT components required by the GLUE experiments. Other experiment code can be added later under the same repository.
 
 ## Contents
 
@@ -80,9 +80,9 @@ Main LOFT flags:
 | Orthogonal transform | --loft_ortho True |
 | Free transform | --loft_ortho False |
 
-## Validated CoLA command
+## Example CoLA command
 
-The following CoLA skewgrad-free setting was validated on Gadi:
+The following is an example CoLA skewgrad-free command:
 
 python run_glue.py \
   --model_name_or_path microsoft/deberta-v3-base \
@@ -122,4 +122,4 @@ For a short smoke test, add:
 
 ## Notes
 
-This is a compact GLUE-only release. Do not commit model weights, checkpoints, W&B logs, HuggingFace caches, or experiment outputs.
+This is a compact initial LOFT code release. Do not commit model weights, checkpoints, W&B logs, HuggingFace caches, or experiment outputs.

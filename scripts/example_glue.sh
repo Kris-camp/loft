@@ -2,7 +2,6 @@
 set -euo pipefail
 
 # Example: CoLA, LOFT skewgrad-free, DeBERTaV3-base.
-# This is the GLUE setting validated on Gadi.
 
 python run_glue.py \
   --model_name_or_path microsoft/deberta-v3-base \
