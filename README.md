@@ -72,15 +72,14 @@ Main LOFT flags:
 
 | Variant | Flags |
 |---|---|
-| Principal support | --loft_pr_init svd |
-| Gradient-SVD support | --loft_pr_init grad_svd |
-| Skew-gradient support | --loft_pr_init wg_skew |
+| Principal support | --loft_pr_init principal |
+| Random support | --loft_pr_init random |
 | Orthogonal transform | --loft_ortho True |
 | Free transform | --loft_ortho False |
 
 ## Example CoLA command
 
-The following is an example CoLA skewgrad-free command:
+The following is an example CoLA LOFT command:
 
 python run_glue.py \
   --model_name_or_path microsoft/deberta-v3-base \
@@ -95,7 +94,7 @@ python run_glue.py \
   --num_train_epochs 20 \
   --warmup_ratio 0.1 \
   --lr_scheduler_type linear \
-  --output_dir outputs/cola_skewgrad_free_r46_lr5e-4_seed42 \
+  --output_dir outputs/cola_loft_principal_r46_lr5e-4_seed42 \
   --overwrite_output_dir True \
   --logging_strategy epoch \
   --evaluation_strategy epoch \
@@ -110,7 +109,7 @@ python run_glue.py \
   --peft_name loft \
   --peft_rank 46 \
   --loft_ortho False \
-  --loft_pr_init wg_skew \
+  --loft_pr_init principal \
   --loft_use_cayley_neumann True \
   --loft_num_cayley_neumann_terms 5
 

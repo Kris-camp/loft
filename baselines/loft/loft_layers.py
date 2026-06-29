@@ -229,7 +229,7 @@ def forward_loft_fixedP(self, x: torch.Tensor):
     return y.to(previous_dtype)
 
 
-# ---------- Pr 的构造：V_r^T / grad_svd / random / perm ----------
+# ---------- Pr builders: principal right singular subspace or random ----------
 @torch.no_grad()
 def build_Pr_from_matrix_right(M_used: torch.Tensor, r: int) -> torch.Tensor:
     """
@@ -245,51 +245,6 @@ def build_Pr_from_matrix_right(M_used: torch.Tensor, r: int) -> torch.Tensor:
 
 
 @torch.no_grad()
-def build_Pr_from_skew_wg_right(W_used: torch.Tensor, G_used: torch.Tensor, r: int) -> torch.Tensor:
-    """
-    Build P_r from the top-r invariant subspace of
-
-        S = skew(W^T G) = (W^T G - G^T W) / 2
-
-    where W_used and G_used are both shaped (out, in).
-
-    Practical implementation:
-    Since S is real skew-symmetric, we recover its dominant real invariant subspace
-    via the top eigenspace of
-
-        C = S^T S = -S^2
-
-    which is symmetric PSD. We then return Pr = V_r^T with shape (r, in).
-    """
-    if W_used.shape != G_used.shape:
-        raise ValueError(
-            f"W_used.shape={tuple(W_used.shape)} and G_used.shape={tuple(G_used.shape)} must match."
-        )
-
-    _, d_in = W_used.shape
-    if r > d_in:
-        raise ValueError(f"rank r={r} > in_features={d_in}")
-
-    if r % 2 != 0:
-        print(
-            f"[LOFT][wg_skew] warning: r={r} is odd. "
-            "Skew-symmetric invariant subspaces are naturally even-dimensional; "
-            "proceeding with the top-r eigenspace of S^T S."
-        )
-
-    Wf = W_used.float()
-    Gf = G_used.float()
-
-    S = 0.5 * (Wf.t() @ Gf - Gf.t() @ Wf)   # (in, in), skew-symmetric
-    C = S.t() @ S                           # symmetric PSD
-
-    evals, V = torch.linalg.eigh(C)         # ascending
-    idx = torch.argsort(evals, descending=True)[:r]
-    Pr = V[:, idx].t().contiguous()         # (r, in)
-
-    return Pr.to(dtype=W_used.dtype)
-
-@torch.no_grad()
 def build_Pr_from_weight_right(W_used: torch.Tensor, r: int, mode: str = "svd", seed: int = 42) -> torch.Tensor:
     """
     W_used: (out, in). We need top RIGHT singular subspace => V_r^T.
@@ -299,13 +254,9 @@ def build_Pr_from_weight_right(W_used: torch.Tensor, r: int, mode: str = "svd", 
     if r > d_in:
         raise ValueError(f"rank r={r} > in_features={d_in}")
 
-    if mode == "perm":
-        g = torch.Generator(device=W_used.device)
-        g.manual_seed(seed)
-        idx = torch.randperm(d_in, generator=g, device=W_used.device)[:r]
-        Pr = torch.zeros((r, d_in), device=W_used.device, dtype=W_used.dtype)
-        Pr[torch.arange(r, device=W_used.device), idx] = 1
-        return Pr
+    mode = str(mode).lower()
+    if mode in {"principal", "principle"}:
+        mode = "svd"
 
     if mode == "random":
         g = torch.Generator(device=W_used.device)
@@ -325,8 +276,7 @@ def build_Pr_from_weight_right(W_used: torch.Tensor, r: int, mode: str = "svd", 
 def create_and_insert_loft_fixedP(
     model,
     peft_config,
-    Pr_init: str = "svd",     # "svd" | "grad_svd" | "wg_skew" | "random" | "perm"
-    grad_map=None,
+    Pr_init: str = "svd",     # "svd"/"principal" | "random"
     seed: int = 0,
     orth: bool = True,
     use_cayley_neumann: bool = True,
@@ -338,6 +288,12 @@ def create_and_insert_loft_fixedP(
     assert not isinstance(peft_config.target_modules, str)
 
     seed_it = seed
+
+    Pr_init = str(Pr_init).lower()
+    if Pr_init in {"principal", "principle"}:
+        Pr_init = "svd"
+    if Pr_init not in {"svd", "random"}:
+        raise ValueError("LOFT Pr_init must be 'svd'/'principal' or 'random'.")
 
     print(f"Inserting loft fixed-P module (right-multiply) with Pr_init={Pr_init}.")
     for key in tqdm(key_list):
@@ -357,37 +313,12 @@ def create_and_insert_loft_fixedP(
 
         # build Pr on THIS layer: using RIGHT singular subspace of W
         W_used = transpose(target.weight, target.fan_in_fan_out).detach()  # (out, in)
-        if Pr_init in {"grad_svd", "wg_skew"}:
-            if grad_map is None:
-                raise ValueError(f"Pr_init={Pr_init!r} requires grad_map.")
-
-            if key in grad_map:
-                G_used = grad_map[key]
-            else:
-                matches = [g for n, g in grad_map.items() if key.endswith(n) or n.endswith(key)]
-                if len(matches) != 1:
-                    raise KeyError(f"Cannot uniquely match grad for layer {key}")
-                G_used = matches[0]
-
-            G_used = G_used.to(device=W_used.device, dtype=torch.float32)
-
-            if Pr_init == "grad_svd":
-                Pr = build_Pr_from_matrix_right(G_used, r=peft_config.r).to(
-                    device=W_used.device, dtype=W_used.dtype
-                )
-            else:
-                Pr = build_Pr_from_skew_wg_right(
-                    W_used=W_used,
-                    G_used=G_used,
-                    r=peft_config.r,
-                ).to(device=W_used.device, dtype=W_used.dtype)
-        else:
-            Pr = build_Pr_from_weight_right(
-                W_used,
-                r=peft_config.r,
-                mode=Pr_init,
-                seed=seed_it,
-            )
+        Pr = build_Pr_from_weight_right(
+            W_used,
+            r=peft_config.r,
+            mode=Pr_init,
+            seed=seed_it,
+        )
         seed_it += 1
 
         target.loft_fixedP = nn.ModuleDict({

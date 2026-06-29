@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Example: CoLA, LOFT skewgrad-free, DeBERTaV3-base.
+# Example: CoLA, LOFT principal support, DeBERTaV3-base.
 
 python run_glue.py \
   --model_name_or_path microsoft/deberta-v3-base \
@@ -16,7 +16,7 @@ python run_glue.py \
   --num_train_epochs 20 \
   --warmup_ratio 0.1 \
   --lr_scheduler_type linear \
-  --output_dir outputs/cola_skewgrad_free_r46_lr5e-4_seed42 \
+  --output_dir outputs/cola_loft_principal_r46_lr5e-4_seed42 \
   --overwrite_output_dir True \
   --logging_strategy epoch \
   --evaluation_strategy epoch \
@@ -31,6 +31,6 @@ python run_glue.py \
   --peft_name loft \
   --peft_rank 46 \
   --loft_ortho False \
-  --loft_pr_init wg_skew \
+  --loft_pr_init principal \
   --loft_use_cayley_neumann True \
   --loft_num_cayley_neumann_terms 5
