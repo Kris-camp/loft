@@ -23,7 +23,7 @@ The code was tested on Gadi with:
 
 On Gadi, the tested virtual environment was:
 
-source /scratch/ca63/$USER/venvs/loft/bin/activate
+source $SCRATCH/venvs/loft/bin/activate
 
 For a fresh environment, install PyTorch for the target CUDA version first, then run:
 
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 The Gadi runs used local HuggingFace caches:
 
-export HF_HOME=/scratch/ca63/$USER/hf
+export HF_HOME=$SCRATCH/hf
 export HF_HUB_CACHE=$HF_HOME/hub
 export HF_DATASETS_CACHE=$HF_HOME/datasets
 export TRANSFORMERS_CACHE=$HF_HOME
