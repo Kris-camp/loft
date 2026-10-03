@@ -52,3 +52,26 @@ out = dict(gamma=float(gamma), se=float(se[1]), tau_hours=float(tau_years * 365 
 json.dump(out, open(os.path.join(TAB, "emp_rates.json"), "w"), indent=1)
 print(out)
 print(B[["l", "u", "w", "diff"]].round(3).to_string())
+
+
+def nw(X, y, L=3):
+    b = np.linalg.lstsq(X, y, rcond=None)[0]; e = y - X @ b; n = len(y)
+    S = sum((X[t:t + 1].T * e[t]) @ (X[t:t + 1] * e[t]) for t in range(n))
+    for l in range(1, L + 1):
+        w = 1 - l / (L + 1)
+        for t in range(l, n):
+            G = (X[t:t + 1].T * e[t]) @ (X[t - l:t - l + 1] * e[t - l]); S += w * (G + G.T)
+    XtXi = np.linalg.inv(X.T @ X); return b, np.sqrt(np.diag(XtXi @ S @ XtXi))
+
+
+tr = np.arange(len(B), dtype=float)
+specs = {}
+b_, s_ = nw(np.column_stack([np.ones(len(B)), B["diff"].values]), y); specs["baseline"] = (b_[1], s_[1], len(y))
+b_, s_ = nw(np.column_stack([np.ones(len(B)), B["diff"].values, tr]), y); specs["trend"] = (b_[1], s_[1], len(y))
+dy, dx = np.diff(y), np.diff(B["diff"].values)
+b_, s_ = nw(np.column_stack([np.ones(len(dy)), dx]), dy); specs["first_diff"] = (b_[1], s_[1], len(dy))
+keep = ~B.index.isin(["2024-03", "2024-08"])
+b_, s_ = nw(np.column_stack([np.ones(keep.sum()), B["diff"].values[keep]]), y[keep]); specs["excl_2024_03_08"] = (b_[1], s_[1], int(keep.sum()))
+out["robust"] = {k: dict(gamma=float(v[0]), se=float(v[1]), n=v[2], tau_days=float(v[0] / 2 / 1e4 * 365)) for k, v in specs.items()}
+json.dump(out, open(os.path.join(TAB, "emp_rates.json"), "w"), indent=1)
+print(json.dumps(out["robust"], indent=1))

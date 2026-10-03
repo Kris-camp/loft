@@ -96,4 +96,5 @@ with open(os.path.join(TAB, "emp_state.tex"), "w") as fh:
     fh.write(f"Difference, closed $-$ open (bp) & \\multicolumn{{2}}{{c}}{{{sb['diff_mean']:.1f} ({sb['diff_se']:.1f})}} \\\\\n")
     fh.write(f"$N$ & {r_s[2]:,} & {r_fix[2]:,} \\\\\n\\bottomrule\n\\end{{tabular}}\n")
 json.dump(OUT, open(os.path.join(TAB, "emp_state.json"), "w"), indent=1)
+a[["l_s", "u_s"]].to_parquet(os.path.join(RAW, "state_bands.parquet"))
 print(json.dumps(OUT, indent=1))

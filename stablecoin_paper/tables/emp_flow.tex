@@ -1,0 +1,21 @@
+\begin{tabular}{lccccc}
+\toprule
+ & Price side & \multicolumn{2}{c}{Large trades} & \multicolumn{2}{c}{Small and medium trades} \\
+\cmidrule(lr){2-2}\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+ & $-s_t(\Delta b-\hat\beta\,\mathit{OFI})$ & next 5 min & next 30 min & next 5 min & next 30 min \\
+ & (1) & (2) & (3) & (4) & (5) \\
+\midrule
+Distance outside band, $d^{out}$ & $0.0031^{***}$ & $0.030^{**}$ & $0.128$ & $-0.336^{***}$ & $-1.848^{***}$ \\
+ & $(0.0008)$ & $(0.014)$ & $(0.089)$ & $(0.114)$ & $(0.712)$ \\
+$\quad\times$ banks open & $0.0071^{***}$ & $0.108^{***}$ & $0.702^{***}$ & $-0.149$ & $-0.987$ \\
+ & $(0.0021)$ & $(0.025)$ & $(0.157)$ & $(0.222)$ & $(1.320)$ \\
+Distance inside band, $d^{in}$ (placebo) & $0.0012$ & $-0.027$ & $-0.164$ & $-0.327^{**}$ & $-1.964^{**}$ \\
+ & $(0.0014)$ & $(0.035)$ & $(0.205)$ & $(0.144)$ & $(0.894)$ \\
+$\quad\times$ banks open & $-0.0008$ & $0.032$ & $0.246$ & $0.252$ & $1.818$ \\
+ & $(0.0017)$ & $(0.061)$ & $(0.350)$ & $(0.244)$ & $(1.489)$ \\
+\midrule
+Open/closed ratio of the $d^{out}$ response & 3.3 & 4.6 & & & \\
+Test of equal ratios, $\log$ difference (s.e.) & \multicolumn{2}{c}{-0.34 (0.51)} & & & \\
+$N$ & 162,624 & 162,624 & 153,847 & 162,624 & 153,847 \\
+\bottomrule
+\end{tabular}
