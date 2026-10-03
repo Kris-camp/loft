@@ -380,7 +380,7 @@ for v, col, mk, lab in [(a.dpl.values, C1, "o", "USDT/TRY price"), (a.dpg.values
     x_, m_, s_ = binned(vv, allm)
     D.errorbar(x_, m_, yerr=1.96 * s_, fmt=mk + "-", ms=3.2, color=col, ecolor=col, lw=0.8, label=lab)
 D.axhline(0, color="k", lw=0.4); D.legend(frameon=False, fontsize=8)
-D.set_title("(d) The stablecoin price adjusts; the interbank rate does not", fontsize=9.5)
+D.set_title("(d) Stablecoin adjusts; interbank does not", fontsize=9.5)
 D.set_ylabel("expected 5-min log change (bp)"); D.set_xlabel("signed distance outside the band (bp)")
 fig.tight_layout(); fig.savefig(os.path.join(FIG, "hero4.pdf")); plt.close(fig)
 json.dump(OUT, open(os.path.join(TAB, "emp_mech.json"), "w"), indent=1, default=float)
