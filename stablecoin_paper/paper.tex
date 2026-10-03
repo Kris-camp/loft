@@ -46,7 +46,7 @@
 
 \begin{abstract}
 \noindent
-Why does the same order-flow shock have such different price impact over the trading day? This paper shows that the answer is effective arbitrage capacity, the speed at which arbitrage closes a dislocation, and that access to banking rails governs it. Arbitrageurs facing transfer frictions and convex balance-sheet costs leave the local stablecoin premium untouched inside a band and trade against it outside, so the long-run price impact of order flow is inversely related to effective capacity. Minute-level data on USDT against the Turkish lira from 2024 to 2026 identify the mechanism from prices and trades. The premium does not mean-revert inside a band of roughly 30 bp; above the band, it reverts three to five times faster when Istanbul banks are open, also when the band is estimated separately by banking state. Large trades lean against dislocations while small and medium trades move with them, and the large-trade response rises with bank opening by a factor statistically indistinguishable from the price-side response. On weekday public holidays, both remain at closed-bank levels. Corrections are statistically detectable in the stablecoin price but not in the interbank rate. Banking access therefore governs how strongly a continuously traded stablecoin remains tied to the dollar price discovered in the banking system.
+Why does the same order-flow shock have such different price impact over the trading day? This paper shows that the answer is effective arbitrage capacity, the speed at which arbitrage closes a dislocation, and that access to banking rails governs it. Arbitrageurs facing transfer frictions and convex balance-sheet costs leave the local stablecoin premium untouched inside a band and trade against it outside. In minute-level data on USDT against the Turkish lira from 2024 to 2026, the premium does not mean-revert inside a band of roughly 30 bp; above the band, it reverts three to five times faster when Istanbul banks are open, also with bands estimated by banking state. Large trades lean against dislocations while small and medium trades move with them, and the large-trade response rises with bank opening by a factor statistically indistinguishable from the price-side response. On weekday public holidays both stay at closed-bank levels. In Mexico, where the central bank's payment system runs around the clock, arbitrage retains most of its speed at night. Corrections are detectable in the stablecoin price but not in the interbank rate.
 
 \bigskip
 \noindent\textbf{Keywords:} stablecoins, limits to arbitrage, banking rails, price discovery, order flow, threshold dynamics
@@ -72,7 +72,7 @@ Inside the band $[-c,c]$ the premium is a martingale; outside it the excess deca
 
 The mechanism is identified from three sides, using one-minute Binance data on USDT against the Turkish lira and one-minute interbank USD/TRY quotes from January 2024 to August 2026 (Figure~\ref{fig:hero}).
 
-\emph{Price evidence.} The premium shows no mean reversion inside a band of median width 32 bp and reverts outside it; linear error correction is rejected. Above the band, the premium reverts three to five times faster when Istanbul banks are open; below the band the difference has the same sign and is estimated less precisely. Bands estimated separately for open and closed hours are wider at night on average, and the speed difference holds with them, so banking hours raise effective capacity over and above any effect on the friction. The difference is as large when the interbank market is actively quoted.
+\emph{Price evidence.} The premium shows no mean reversion inside a band of median width 32 bp and reverts outside it; linear error correction is rejected. Above the band, the premium reverts three to five times faster when Istanbul banks are open; below the band the difference has the same sign and is estimated less precisely. Bands estimated separately for open and closed hours are wider at night on average, and the speed difference holds with them, so banking hours raise effective capacity over and above any effect on the friction. The difference is as large when the interbank market is actively quoted. In Mexico, where the central bank's settlement system runs around the clock, the same construction shows a much smaller day--night difference: arbitrage at night retains nearly two thirds of its daytime speed in Mexico and about one twentieth in Turkey, and the difference in open-to-closed ratios is significant.
 
 \emph{Flow evidence.} Trade-level data reveal two sharply different flow patterns corresponding to the two forces in the model. Small and medium trades exhibit demand-like flow: they move with the dislocation. Large trades exhibit arbitrage-like flow: in the five and thirty minutes after the premium leaves the band they trade toward it, in proportion to the distance outside, and they do not respond to the premium inside the band. The large-trade response rises with bank opening by a factor of 4.6, the price-side speed by a factor of 3.3, and a cross-equation test does not reject that the two ratios are equal. Prices and trades are thus consistent with a common shift in effective capacity. On weekday public holidays, when the clock says business hours but banks are closed, neither response rises.
 
@@ -260,7 +260,7 @@ Turkey is a natural laboratory for the model. Domestic demand for dollar assets 
 
 \paragraph{Local market.} One-minute USDT/TRY candles come from Binance's public data archive, from 2 January 2024 to 31 August 2026. For each minute the archive reports volume, the number of trades, quote volume and \emph{taker-buy} volume. The local price $P^L_t$ is the minute volume-weighted average price (quote volume divided by volume). Signed order flow is taker-buy minus taker-sell volume, $\mathit{OFI}_t=2\,\mathit{TBV}_t-V_t$, in USDT. The market is deep: the median minute has 90 trades and 36 thousand USDT of volume (Table~\ref{tab:summary}). Binance aggregated-trade files record every aggressive trade with its size and side, which is used in Section~\ref{sec:evidence} to split order flow by trade size.
 
-\paragraph{Benchmark.} The dollar price is the interbank USD/TRY mid-quote from Dukascopy one-minute candles, whose median relative bid-ask spread is about 1 bp. The sample uses minutes with interbank activity on weekdays, excludes the 20:30--22:30 UTC rollover window, and discards minutes with $|b_t|>10\%$. The premium is $b_t=10^4(\log P^L_t-\log P^G_t)$ in basis points.
+\paragraph{Benchmark.} The dollar price is the USD/TRY mid-quote from one-minute candles of Dukascopy's SWFX marketplace, an institutional FX venue that aggregates quotes from bank and non-bank liquidity providers; its median relative bid-ask spread is about 1 bp. For brevity it is called the interbank rate below. The sample uses minutes with interbank activity on weekdays, excludes the 20:30--22:30 UTC rollover window, and discards minutes with $|b_t|>10\%$. The premium is $b_t=10^4(\log P^L_t-\log P^G_t)$ in basis points.
 
 \paragraph{Where the friction sits.} On the same exchange, the USDT/TRY price and the USDT price implied by the BTC/TRY and BTC/USDT order books differ with a standard deviation of $2.4$ bp; this triangular arbitrage moves no fiat money. The premium over the interbank rate has a standard deviation of $56$ bp. The relevant frictions are those of the fiat and cross-border leg, which is what $c$ and $K$ measure.
 
@@ -366,6 +366,31 @@ During Istanbul business hours, banks process transfers and the fiat leg of the 
 \includegraphics[width=\textwidth]{figures/emp_cycle.pdf}
 \caption{\textbf{The banking day and a holiday placebo.} (a) Speed of arbitrage outside the band, $\hat\kappa$, by two-hour block of the Istanbul day on ordinary weekdays, and during 09:00--17:00 on the 29 weekday public holidays in the sample (square). (b) The same for the large-trade response $\hat\theta$ of Table~\ref{tab:emp_flow}, column (2), in standard deviations of flow per 100 bp. Bands are estimated by month and banking state; month fixed effects; 95\% confidence intervals clustered by day. The shaded area marks business hours.}
 \label{fig:emp_cycle}
+\end{figure}
+
+\subsection{A cross-country contrast: rails that never close}
+
+If closed banking rails drive the night-time collapse of effective capacity, the collapse should be specific to markets whose large-value rails close. In Turkey, large transfers between banks run through EFT, which operates during business hours on business days; the instant FAST system runs around the clock but caps each transfer (at 100,000 lira for individuals and 250,000 lira for commercial accounts in 2025--2026, a few thousand dollars). In Mexico, SPEI, the real-time gross settlement system of the central bank, runs 24 hours a day on every day of the year and settles high-value transfers \citep{banxico_spei}. Binance lists USDT against the Mexican peso and Dukascopy quotes USD/MXN, so the identical construction applies to both markets over the common window November 2024 -- August 2026, with business hours 09:00--17:00 local time in each.
+
+Table~\ref{tab:emp_mxn} and Figure~\ref{fig:emp_mxn} report the comparison. Levels of the speed are not comparable across markets, because the price impact of arbitrage flow $\lambda$ differs with depth, and the Mexican market trades about one fiftieth of the Turkish volume. The open-to-closed ratio removes $\lambda$ under state-invariance within each market. It is $4.2$ in Turkey and $1.6$ in Mexico, and the difference in log ratios, $0.94$ (s.e.\ $0.47$), is significant at 5\%. At night, arbitrage in Mexico retains nearly two thirds of its daytime speed; in Turkey it retains about one twentieth. The bands tell the same story: closed-hours bands are 8 bp wider than open-hours bands in Turkey and 2 bp wider in Mexico. The Mexican daytime increment shows that part of the intraday variation is common to both markets, as daytime FX liquidity and staffing would produce; the holiday placebo ties the Turkish increment to banks being open. The night-time collapse of effective capacity is specific to the market whose large-value rails close.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Turkey and Mexico: rails that close and rails that do not}}
+\label{tab:emp_mxn}
+\footnotesize
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/emp_mxn.tex}}
+\begin{minipage}{0.95\textwidth}
+\footnotesize\vspace{4pt}
+\emph{Notes:} USDT/TRY and USDT/MXN on Binance against Dukascopy USD/TRY and USD/MXN, November 2024 -- August 2026, identical construction: five-minute averages, bands by month and local banking state, month-by-state effects. The dependent variable is $-s_t(\Delta b_t-\hat\beta\,\mathit{OFI}_t)$ as in Table~\ref{tab:emp_flow}, column (1); business hours are 09:00--17:00 local time (Istanbul UTC+3, Mexico City UTC$-$6). Log-ratio standard errors by the delta method; the cross-market difference treats the two samples as independent. Standard errors clustered by day.
+\end{minipage}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/emp_mxn_cycle.pdf}
+\caption{\textbf{The daily cycle of arbitrage in Turkey and Mexico.} Speed of arbitrage outside the band, $\hat\kappa$, by two-hour block of local time, November 2024 -- August 2026, with month fixed effects and 95\% confidence intervals clustered by day. The shaded area marks local business hours.}
+\label{fig:emp_mxn}
 \end{figure}
 
 \subsection{Arbitrage in the trades}
@@ -483,7 +508,7 @@ Table~\ref{tab:emp_year} estimates~\eqref{eq:emp} by year. The primitive impact 
 
 The same order-flow shock moves a local stablecoin price by different amounts at different times because effective arbitrage capacity, the speed at which arbitrage closes a dislocation, varies, and access to the banking system governs it. A per-unit cost and a finite capacity turn the local premium into a threshold diffusion, separate what volume reveals (demand) from what the premium reveals (capacity), and filter which local information reaches the global price.
 
-The lira stablecoin market shows the mechanism from three sides. Prices: premia inside a band of about 30 bp do not revert, and above it they revert three to five times faster when banks are open, also with bands estimated by banking state. Trades: small and medium trades open dislocations, large trades lean against them in proportion to the distance outside the band, and their response rises with bank opening by a factor statistically indistinguishable from the price-side speed and stays flat on bank holidays. Price discovery: corrections are detectable in the stablecoin price and not in the interbank rate. Replaying history with daytime capacity around the clock shrinks the premium's large excursions by about a fifth.
+The lira stablecoin market shows the mechanism from three sides. Prices: premia inside a band of about 30 bp do not revert, and above it they revert three to five times faster when banks are open, also with bands estimated by banking state. Trades: small and medium trades open dislocations, large trades lean against them in proportion to the distance outside the band, and their response rises with bank opening by a factor statistically indistinguishable from the price-side speed and stays flat on bank holidays. Across countries: in Mexico, whose central-bank settlement system never closes, arbitrage keeps most of its speed at night. Price discovery: corrections are detectable in the stablecoin price and not in the interbank rate. Replaying history with daytime capacity around the clock shrinks the premium's large excursions by about a fifth.
 
 The same design applies to the naira, peso and won markets, where different capital-control regimes and interest differentials imply different bands for the same demand, and to direct measures of capacity such as exchange withdrawal flows. Whether a local market helps discover the dollar's value, or pays for access to it, is a question its premium and its trades can answer.
 
@@ -499,6 +524,9 @@ Aldasoro, I., P. Beltran, and F. Grinberg (2026). Stablecoin inflows and spillov
 
 \bibitem[Baulkaran et al.(2026)]{baulkaran2026market}
 Baulkaran, V., P. Jain, and K. Sobanski (2026). Market microstructure of stablecoins: Evidence from USDT. Working paper, SSRN 6809282.
+
+\bibitem[Banco de M\'exico(2026)]{banxico_spei}
+Banco de M\'exico (2026). Sistema de Pagos Electr\'onicos Interbancarios (SPEI). Institutional description of the SPEI payment system.
 
 \bibitem[Balke and Fomby(1997)]{balke1997threshold}
 Balke, N.~S. and T.~B. Fomby (1997). Threshold cointegration. \emph{International Economic Review} 38(3), 627--645.

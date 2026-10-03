@@ -13,6 +13,7 @@
    - `python code/aggtrades_ofi.py 2024-01 2026-08 && python code/empirics_size.py` — size-split order flow (Table 6)
    - `python code/download_binance.py USDTMXN 2024-11 2026-08 && python code/download_dukascopy.py USDMXN 2024-11-01 2026-08-31 && python code/empirics_did.py` — DiD vs USDT/MXN (Table 9)
    - `python code/empirics_mech.py` — flow-side policy test, price-flow cross-equation test, daily cycle and holiday placebo, 24/7-banking counterfactual, Figure 1 (run after empirics_state.py)
+   - `python code/download_binance.py USDTMXN 2024-11 2026-08 && python code/download_dukascopy.py USDMXN 2024-11-01 2026-08-31 && python code/empirics_mxn.py` — Turkey vs Mexico contrast (Table/Figure on rails that never close)
    - `python code/rates_band.py` — band width vs CBRT-Fed rate differential (not reported: not robust to a time trend)
 6. Robustness: `TAG=_f1 FREQ=1min`, `TAG=_f15 FREQ=15min`, `TAG=_close PRICE=close`, `TAG=_excl EXCL=2025-03-19,2025-04-30`,
    `TAG=_q BAND=Q`, `TAG=_trim10 TRIM=0.10` (each with `BOOT=0 python code/empirics_main.py`), then `python code/robust_table.py`.
