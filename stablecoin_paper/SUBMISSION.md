@@ -7,8 +7,8 @@
 
 ## Form fields
 - Title: Who Discovers the Dollar? Banking Rails and Arbitrage in Stablecoin Markets
-- Author: Jiayi Wang, University of Technology Sydney
-- Email: Jiayi.Wang-1@student.uts.edu.au
+- Authors: Jiayi Wang, University of Technology Sydney (corresponding); Lanxin Zhao, The University of Sydney
+- Emails: Jiayi.Wang-1@student.uts.edu.au; lzha6608@uni.sydney.edu.au
 - Keywords: stablecoins; limits to arbitrage; banking rails; price discovery; order flow; threshold dynamics
 - JEL: G12, G14, G15, F31
 
