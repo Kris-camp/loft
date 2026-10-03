@@ -26,8 +26,12 @@ def get(sym, ym):
     return "fail"
 
 if __name__ == "__main__":
-    jobs = [(s, "2023-06", "2026-08") for s in ["USDTTRY", "BTCTRY", "BTCUSDT"]] + \
-           [(s, "2022-01", "2024-03") for s in ["USDTNGN", "BTCNGN"]]
+    import sys
+    if len(sys.argv) > 1:
+        jobs = [(sys.argv[1], sys.argv[2], sys.argv[3])]
+    else:
+        jobs = [(s, "2023-06", "2026-08") for s in ["USDTTRY", "BTCTRY", "BTCUSDT"]] + \
+               [(s, "2022-01", "2024-03") for s in ["USDTNGN", "BTCNGN"]]
     for sym, a, b in jobs:
         for ym in months(a, b):
             print(sym, ym, get(sym, ym), flush=True)

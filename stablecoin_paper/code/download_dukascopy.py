@@ -23,7 +23,11 @@ def fetch(day, side, pair="USDTRY"):
     return "fail"
 
 if __name__ == "__main__":
+    import sys
+    PAIR = sys.argv[1] if len(sys.argv) > 1 else "USDTRY"
     d0, d1 = dt.date(2023, 6, 1), dt.date(2026, 8, 31)
+    if len(sys.argv) > 3:
+        d0, d1 = dt.date.fromisoformat(sys.argv[2]), dt.date.fromisoformat(sys.argv[3])
     days = [d0 + dt.timedelta(n) for n in range((d1 - d0).days + 1)]
     days = [d for d in days if d.weekday() < 5]
     # priority: 2025 (includes the March 2025 lira shock), then the rest newest-first
@@ -31,5 +35,5 @@ if __name__ == "__main__":
     from concurrent.futures import ThreadPoolExecutor
     jobs = [(d, "BID") for d in days]  # FX bid-ask spread is ~1bp; mid = bid + half median spread
     with ThreadPoolExecutor(12) as ex:
-        for (d, s), r in zip(jobs, ex.map(lambda j: fetch(*j), jobs)):
+        for (d, s), r in zip(jobs, ex.map(lambda j: fetch(*j, pair=PAIR), jobs)):
             print(d, s, r, flush=True)
