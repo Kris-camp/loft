@@ -59,7 +59,7 @@ def load_fx(pair="USDTRY"):
     # where the ask is unavailable, the mid is the bid plus half the median relative spread
     m["fx_mid"] = np.where(m.ask.notna(), (m.bid + m.ask) / 2, m.bid * (1 + half))
     m["fx_spread"] = (m.ask - m.bid) / m.fx_mid
-    return m[["fx_mid", "fx_spread"]]
+    return m[["fx_mid", "fx_spread", "fxv"]]
 
 
 def build(local, with_fx):

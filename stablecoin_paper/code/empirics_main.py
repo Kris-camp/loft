@@ -31,7 +31,7 @@ C1, C2, C3 = "#1f4e79", "#c0504d", "#7f7f7f"
 NUM = dict(freq=FREQ, band=BAND)
 
 # ------------------------------------------------------------------ data
-p = pd.read_parquet(os.path.join(RAW, "panel_TRY.parquet")).drop(columns=["fx_mid", "fx_spread"], errors="ignore")
+p = pd.read_parquet(os.path.join(RAW, "panel_TRY.parquet")).drop(columns=["fx_mid", "fx_spread", "fxv"], errors="ignore")
 p = p.loc[START:END]
 fx = load_fx("USDTRY")
 p = p.join(fx.reindex(p.index, method="ffill", limit=2))
@@ -53,7 +53,7 @@ if EXCL:
     p.loc[a0:a1, "b"] = np.nan
 
 g = p.resample(FREQ)
-a = pd.DataFrame({"b": g.b.mean(), "nb": g.b.count(), "ofi": g.ofi.sum(), "vol": g.vol.sum(),
+a = pd.DataFrame({"b": g.b.mean(), "nb": g.b.count(), "ofi": g.ofi.sum(), "vol": g.vol.sum(), "fxv": g.fxv.sum(),
                   "pl": np.log(g.p_usdt.mean()), "pg": np.log(g.fx_mid.mean())})
 a = a[a.nb >= (1 if FREQ == "1min" else 2)]
 naive = a.index.tz_localize(None)
@@ -126,6 +126,8 @@ a["dn"] = np.maximum(a.l - a.x, 0)        # coefficient = kappa^-
 a["exc"] = np.maximum(a.x - a.u, 0) + np.maximum(a.l - a.x, 0)
 a["inband"] = (a.exc == 0).astype(float)
 NUM["share_inband"] = float(a.inband.mean())
+if not TAG:
+    a.to_parquet(os.path.join(RAW, "a5.parquet"))
 NUM["band_width_median"] = float(np.median([v["u"] - v["l"] for v in bands.values()]))
 
 

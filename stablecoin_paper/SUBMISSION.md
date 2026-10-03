@@ -3,7 +3,7 @@
 - Conference: 15th Annual Stern/Salomon Center Microstructure Conference, Friday 4 December 2026, NYU Stern
 - Deadline: 11:59 pm US Eastern, Sunday 4 October 2026
 - Portal: https://microstructuresubmission.stern.nyu.edu/
-- File: `paper.pdf` (PDF, 34 pages, ~0.6 MB; the portal limit has been 11 MB)
+- File: `paper.pdf` (PDF, 32 pages, ~0.6 MB; the portal limit has been 11 MB)
 
 ## Form fields
 - Title: Who Discovers the Dollar? Arbitrage Capacity and Price Discovery in Fragmented Stablecoin Markets
@@ -13,14 +13,15 @@
 - JEL: G12, G14, G15, F31
 
 ## Short abstract (for the web form, ~150 words)
-Identical dollar stablecoins trade at persistent premia across local-currency markets. I show that arbitrage capacity
-governs how order flow becomes price. With a proportional transfer cost and a convex balance-sheet cost, arbitrage is
-inactive inside a band and linear outside it, so the premium follows a threshold diffusion with a closed-form
-stationary law. Long-run price impact equals primitive impact divided by capacity: volume reveals demand while the
-premium reveals capacity. Depletable capacity implies an arbitrage throughput limit, and hub-and-spoke arbitrage
-networks are efficient but fragile. In 2024–2026 minute data on USDT against the Turkish lira, there is no mean
-reversion inside a band of about 30 bp and significant reversion outside it; arbitrage is four times faster during
-Istanbul banking hours; and the stablecoin market does essentially all of the adjusting toward the interbank rate.
+The same dollar stablecoin trades at different prices across local currencies, and identical order flow moves those
+prices by very different amounts. Arbitrageurs with a per-unit transfer cost and a convex balance-sheet cost leave the
+premium untouched inside a band and trade linearly outside it, so the long-run price impact of order flow equals
+primitive impact divided by arbitrage capacity: volume measures demand, and the premium measures capacity. Minute data
+on USDT against the Turkish lira (2024-2026) match these predictions. The premium does not revert inside a band of about
+30 bp and reverts outside it; arbitrage is four times faster when Istanbul banks are open, so the same order flow has
+nearly five times the long-run price impact at night; the stablecoin price carries the entire correction toward the
+interbank rate; and a 2025 rule that capped retail stablecoin transfers while exempting arbitrage lowered the premium
+and its sensitivity to order flow and left the speed of arbitrage unchanged.
 
 ## Optional dual submission to the Journal of Financial Markets
 Ticking the dual-submission box also sends the paper to JFM; it requires certifying the paper is not under review
