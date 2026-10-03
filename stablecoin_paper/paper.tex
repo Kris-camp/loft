@@ -33,14 +33,14 @@
 
 \author{[Author names and affiliations]\thanks{[Contact information.] We thank [acknowledgements]. All errors are our own.}}
 
-\date{October 2026\\[6pt] \small Preliminary and incomplete}
+\date{October 2026\\[6pt] \small Preliminary draft}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 \noindent
-Identical dollar stablecoins trade at persistent, time-varying premia across local-currency markets, and the same order-flow imbalance moves the local premium a lot in some markets and barely at all in others. We argue that the missing state variable is \emph{arbitrage capacity}. In a model where arbitrageurs face a proportional transfer cost and a convex balance-sheet cost, optimal arbitrage is zero inside a no-arbitrage band and linear in the size of the dislocation outside it. The local premium then follows a threshold diffusion with a closed-form stationary law: a flat plateau inside the band and Gaussian tails outside it. The model gives five results. Small premia are martingales while large ones revert, so proportional reversion speed rises with the size of the dislocation. The long-run price impact of order flow equals primitive impact divided by capacity, so trading volume reveals demand while the premium reveals capacity. When arbitrage depletes capacity, long-run price impact is convex and the premium diverges once order flow exceeds an arbitrage throughput limit. The band stops small local information from reaching the global price. In a multi-venue network, cross-venue dispersion is bounded by the algebraic connectivity of the active arbitrage graph, so hub-and-spoke arbitrage is efficient in normal times but fragile to the failure of the hub. We provide a profiled threshold estimator that recovers the band, capacity and order-flow impact from high-frequency premium and order-flow data, and we show by simulation that linear error-correction models misstate both the speed of arbitrage and the price impact of order flow.
+Identical dollar stablecoins trade at persistent, time-varying premia across local-currency markets, and the same order-flow imbalance can move one local premium a lot and another barely at all. We argue that the missing state variable is \emph{arbitrage capacity}. When arbitrageurs face a proportional transfer cost and a convex balance-sheet cost, arbitrage is inactive inside a band and linear in the dislocation outside it. The premium then follows a threshold diffusion with a closed-form stationary law. The model implies that small premia do not revert while large ones do; that long-run price impact equals primitive impact divided by capacity, so volume reveals demand while the premium reveals capacity; that depletable capacity creates an arbitrage throughput limit beyond which the premium diverges; that the band filters which local information reaches the global price; and that hub-and-spoke arbitrage networks are efficient but fragile. Using 2024--2026 minute data on USDT against the Turkish lira, we find no mean reversion inside an estimated band of about 30 bp and significant reversion outside it. Arbitrage is four times faster during Istanbul banking hours, so the same order flow has nearly five times the long-run price impact at night. The stablecoin market does essentially all of the adjusting toward the interbank rate, and the market has become markedly more integrated over time. The dollar's price is discovered in the interbank market; the stablecoin market pays for access to it.
 
 \bigskip
 \noindent\textbf{Keywords:} stablecoins, limits to arbitrage, market fragmentation, price discovery, order flow, threshold dynamics
@@ -94,8 +94,20 @@ The model maps into a discrete-time threshold regression,
 \]
 which we estimate by profiling the sum of squared residuals over $(c^+,c^-)$. The structural objects of interest are the band $(c^+,c^-)$, the capacity-scaled reversion speeds $\kappa^\pm$, the primitive impact $\beta$ and the long-run impact multiplier $\beta/\kappa^\pm$. The model also offers an identification device. Inside the band arbitrage flow is zero, so all observed order flow is non-arbitrage flow. In-band observations therefore identify the primitive impact $\beta$ free of the mechanical contamination that arises when arbitrageurs' own trades are part of measured order flow. Monte Carlo evidence shows that the estimator recovers all parameters accurately at sample sizes of a few weeks of minute data. A linear error-correction model fitted to the same data understates the speed of arbitrage outside the band by a factor of two to eight across our designs, and it implies mean reversion inside the band, where none exists.
 
-\paragraph{Application.}
-The framework is designed for local USDT markets in high-inflation, capital-controlled economies, where the local premium, local signed order flow and proxies for arbitrage capacity (banking-hour and weekend effects, transfer-rail outages, exchange withdrawal suspensions, regulatory announcements) are all observed at high frequency. The Turkish lira and Nigerian naira markets offer a natural contrast: both have intense retail demand for dollar stablecoins, but they differ sharply in the frictions faced by arbitrageurs. The model predicts that differences in measured premia and price impact between such markets reflect differences in $(c, K)$ rather than in demand. Section~\ref{sec:empirics} lays out the empirical design. The empirical application is in progress.
+\paragraph{Evidence.}
+We take the model to the market for USDT against the Turkish lira from January 2024 to August 2026. We combine one-minute Binance candles, which record taker-initiated volume and hence signed order flow, with one-minute interbank USD/TRY quotes. The premium of USDT over the interbank rate has a standard deviation of 56 bp. On the same exchange, the triangular basis against the BTC cross rate has a standard deviation of only 2.4 bp, so the relevant frictions sit in the fiat leg of the arbitrage. Estimating month-specific bands, we find four results.
+First, the threshold structure is in the data. There is no detectable mean reversion inside a band of median width 32 bp, while the premium reverts significantly outside it, and linearity is rejected.
+Second, capacity varies with banking hours exactly as the model predicts. Above the band, arbitrage is four times faster during Istanbul business hours than outside them, while the primitive impact of order flow is statistically indistinguishable across the two states. A sustained order-flow imbalance therefore has a long-run price impact of about 56 bp during business hours and 257 bp outside them.
+Third, essentially all of the correction happens in the stablecoin price; the interbank rate does not respond to stablecoin order flow or to the premium. During the 19 March 2025 lira shock, the interbank rate jumped 11\% while USDT/TRY rose 6\%, opening a 660 bp discount that closed within 75 minutes.
+Fourth, between 2024 and 2026 the price impact of order flow fell by three quarters, the speed of arbitrage roughly doubled, and the volatility of the premium fell from 74 to 16 bp.
+Figure~\ref{fig:hero} summarizes the first two results. Together, these facts say that the lira stablecoin market follows, rather than discovers, the dollar's price, and that how closely it follows is governed by arbitrage capacity.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/hero.pdf}
+\caption{\textbf{Arbitrage switches on outside a band, and switches on faster when banks are open.} USDT/TRY premium over the interbank rate, five-minute intervals, January 2024 -- August 2026. The horizontal axis is the signed distance of the premium outside its month-specific no-arbitrage band; all observations inside the band are plotted at zero (grey). The vertical axis is the expected change in the premium over the next five minutes, net of order flow and month fixed effects, with 95\% confidence intervals clustered by day. Lines are the fitted threshold model (Table~\ref{tab:emp_main}). Panel (a): full sample. Panel (b): Istanbul business hours versus other hours.}
+\label{fig:hero}
+\end{figure}
 
 \paragraph{Related literature.}
 The paper sits at the intersection of four literatures.
@@ -108,7 +120,7 @@ The paper sits at the intersection of four literatures.
 
 \emph{Fragmentation and price discovery.} Our price-discovery result complements the information-share approach of \citet{hasbrouck1995one} and \citet{gonzalo1995estimation}, which is built on linear error correction. Under threshold arbitrage, the contribution of a venue to price discovery depends on the size of the information it receives, so linear information shares average over economically distinct regimes. \citet{lehar2024fragmentation} show how fixed costs fragment liquidity across fee tiers within a decentralized exchange. We study fragmentation across venues and currencies and focus on its implications for convergence.
 
-The remainder of the paper is organized as follows. Section~\ref{sec:model} presents the model. Section~\ref{sec:implications} derives its implications. Section~\ref{sec:network} studies networks of venues. Section~\ref{sec:empirics} develops the estimator and the empirical design. Section~\ref{sec:mc} reports simulation evidence. Section~\ref{sec:conclusion} concludes. Proofs are in the Appendix.
+The remainder of the paper is organized as follows. Section~\ref{sec:model} presents the model. Section~\ref{sec:implications} derives its implications. Section~\ref{sec:network} studies networks of venues. Section~\ref{sec:empirics} develops the estimator and the empirical design. Section~\ref{sec:evidence} presents the evidence from the lira market. Section~\ref{sec:mc} reports simulation evidence on the estimator. Section~\ref{sec:conclusion} concludes. Proofs are in the Appendix.
 
 %=====================================================================
 \section{Model}\label{sec:model}
@@ -157,6 +169,10 @@ The policy is the soft-thresholding operator familiar from statistics. Its two p
 
 \begin{remark}[Static versus dynamic arbitrage]
 Proposition~\ref{prop:policy} treats arbitrage as a flow decision. In a fully dynamic model with fixed costs, the option value of waiting widens the band beyond the static cost, as in \citet{dumas1992dynamic}. The structure of the solution (inaction inside a band, active trading outside it) is preserved. The band $c^\pm$ estimated in Section~\ref{sec:empirics} should therefore be read as an \emph{effective} threshold that includes any such option value. More generally, for any convex cost $C(a)$ with $C'(0^+)=c^+$ and $C'(0^-)=-c^-$, the optimal policy is $a^*(b)=(C')^{-1}(b)$ outside $[-c^-,c^+]$ and zero inside, so all qualitative results below survive. Only the closed forms rely on the quadratic specification.
+\end{remark}
+
+\begin{remark}[Settlement latency and the location of the band]\label{rem:carry}
+Cross-border stablecoin arbitrage is not instantaneous. Fiat legs settle with a delay, exchanges can hold withdrawals, and transfers may be subject to compliance reviews. Suppose a round trip ties up capital for a period $\tau$, during which the arbitrageur holds dollar-denominated inventory rather than local-currency deposits. The arbitrageur then forgoes the interest differential $(i-i^*)$ over $\tau$ in \emph{both} directions, so the band becomes $[-c^- - (i-i^*)\tau,\; c^+ + (i-i^*)\tau]$. In a high-interest-rate economy this term is large. At a 45\% annual lira rate, a 48-hour withdrawal hold adds roughly $25$ bp to each edge of the band. Directional frictions, such as limits on outbound stablecoin transfers, raise only one edge. They therefore shift the band's location and, by Proposition~\ref{prop:stationary}(b), the average premium. Empirically, we estimate the edges $\ell\equiv-c^-$ and $u\equiv c^+$ freely, so the band need not contain zero.
 \end{remark}
 
 \subsection{Premium dynamics}
@@ -424,6 +440,158 @@ The model yields the following tests, in order of increasing structure.
 \end{enumerate}
 
 %=====================================================================
+\section{Evidence from the lira stablecoin market}\label{sec:evidence}
+%=====================================================================
+
+We now take the model to the market for USDT against the Turkish lira, one of the largest local-currency stablecoin markets in the world. Turkey is a natural laboratory. Domestic demand for dollar assets is persistent and strong. The lira was hit by a large political shock during the sample. Policy interest rates were very high, so the carry cost of settlement latency in Remark~\ref{rem:carry} is economically large. Access to the fiat leg of the arbitrage runs through domestic banking rails whose availability varies by time of day.
+
+\subsection{Data and construction}
+
+\paragraph{Local market.} We use one-minute USDT/TRY candles from Binance's public data archive, from 2 January 2024 to 31 August 2026. For each minute the archive reports volume, the number of trades, quote volume and \emph{taker-buy} volume. The local price $P^L_t$ is the minute volume-weighted average price (quote volume divided by volume). Signed order flow is taker-buy minus taker-sell volume, $\mathit{OFI}_t=2\,\mathit{TBV}_t-V_t$, in USDT. The market is liquid: the median minute has 90 trades and 36 thousand USDT of volume (Table~\ref{tab:summary}).
+
+\paragraph{Benchmark.} The global dollar price is the interbank USD/TRY mid-quote from Dukascopy one-minute bid and ask candles. Its median relative bid-ask spread is about 1 bp. We use minutes with interbank activity only, exclude weekends and the 20:30--22:30 UTC rollover window (when interbank quotes are stale or very wide), and discard the handful of minutes with $|b_t|>10\%$. The premium is $b_t=10^4(\log P^L_t-\log P^G_t)$ in basis points.
+
+\paragraph{Sampling.} We average the premium over non-overlapping five-minute intervals, which removes most of the bid-ask bounce in the local price, and sum order flow over the same interval. We standardize order flow by its within-month standard deviation, so that $\beta$ is the premium response in basis points to a one-standard-deviation five-minute order-flow shock. The regression is
+\begin{equation}\label{eq:emp}
+\Delta b_t=\alpha_m+\beta\,\mathit{OFI}_t-\kappa^+\pos{b_{t-1}-u_m}+\kappa^-\pos{\ell_m-b_{t-1}}+\varepsilon_t,
+\end{equation}
+where $t$ indexes five-minute intervals, order flow is measured over the same interval as the price change, $\alpha_m$ is a month fixed effect, and $[\ell_m,u_m]$ is a month-specific band. The final sample has 162{,}624 intervals over 694 trading days.
+
+\paragraph{Why month-specific bands.} The premium's level moves substantially at low frequency (Figure~\ref{fig:emp_premium}). It averaged more than 100 bp in the first half of 2024, fluctuated around zero in 2025, and turned into a discount of 10--25 bp in 2026. Remark~\ref{rem:carry} and Proposition~\ref{prop:stationary}(b) attribute such movements to slow-moving carry and directional frictions, which shift the band. We therefore estimate the band edges month by month. In each month, $(\ell_m,u_m)$ are profiled over a 1 bp grid subject to $\ell_m\le u_m$ and 5\% trimming. Given the bands, we estimate the common slopes in~\eqref{eq:emp} by pooled OLS. Thresholds are super-consistent \citep{hansen2000sample}, so slope inference treats them as known. All standard errors are clustered by day.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Summary statistics: USDT/TRY, January 2024 -- August 2026}}
+\label{tab:summary}
+\footnotesize
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/emp_summary.tex}}
+\begin{minipage}{0.95\textwidth}
+\footnotesize\vspace{4pt}
+\emph{Notes:} One-minute data on weekdays, excluding 20:30--22:30 UTC. The premium is the log difference between the Binance USDT/TRY minute VWAP and the Dukascopy interbank USD/TRY mid. Signed order flow is taker-buy minus taker-sell volume. The triangular basis compares USDT/TRY with the cross rate implied by BTC/TRY and BTC/USDT on the same exchange (all days).
+\end{minipage}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/emp_premium.pdf}
+\caption{\textbf{The USDT/TRY premium over the interbank rate.} Panel (a): daily mean premium and the estimated monthly band edges $\ell_m$ and $u_m$. Panel (b): monthly standard deviation of the five-minute premium and the width of the estimated band.}
+\label{fig:emp_premium}
+\end{figure}
+
+\paragraph{The friction is in the fiat leg.} Table~\ref{tab:summary} contains a useful benchmark. On the same exchange, the USDT/TRY price and the USDT price implied by the BTC/TRY and BTC/USDT order books differ by only $2.4$ bp (standard deviation). This triangular arbitrage requires no movement of fiat money and is essentially frictionless. The premium over the interbank rate, by contrast, has a standard deviation of $56$ bp. The frictions that matter for the dollar premium are those of the fiat and cross-border leg, which is what $c$ and $K$ measure in the model.
+
+\subsection{Threshold dynamics}
+
+Table~\ref{tab:emp_main} reports the main estimates. Column (1) is a linear error-correction model with month fixed effects. It finds slow, uniform reversion ($\hat\kappa=0.0039$ per five minutes). Column (2) estimates the threshold model. Outside the band the premium reverts at $\hat\kappa^+=0.0054$ above it and $\hat\kappa^-=0.0085$ below it, both significant at 1\%. Column (3) adds a linear reversion term that is active only \emph{inside} the band. Its coefficient is $-0.0006$ with a standard error of $0.0007$, so there is no detectable mean reversion inside the band, as Proposition~\ref{prop:reversion}(a) predicts. The median band width is 32 bp, and 39\% of intervals lie inside the band. A sup-LR test of linearity has limited power month by month: it rejects at 5\% in 19\% of months. Summed across months, however, the statistic is 464, and a day-clustered wild bootstrap under the linear null gives a $p$-value of $0.01$, the smallest attainable with 99 draws.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Threshold arbitrage in the USDT/TRY premium}}
+\label{tab:emp_main}
+\footnotesize
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/emp_main.tex}}
+\begin{minipage}{0.95\textwidth}
+\footnotesize\vspace{4pt}
+\emph{Notes:} Dependent variable: five-minute change in the premium (bp). OFI is standardized within month. $[\ell_m,u_m]$ is the band estimated month by month; $m_m$ is its midpoint. BH is an indicator for Istanbul business hours (09:00--17:00). Standard errors clustered by day in parentheses. ***, **, * denote significance at 1\%, 5\%, 10\%.
+\end{minipage}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.66\textwidth]{figures/emp_drift.pdf}
+\caption{\textbf{Expected premium change by position relative to the band.} Mean five-minute change in the premium net of the order-flow component, by signed distance outside the month-specific band (0 = inside the band), net of month fixed effects, with 95\% confidence intervals clustered by day. Dislocations more than 60 bp outside the band are omitted for readability. The red line is the fitted drift of column (2) of Table~\ref{tab:emp_main}.}
+\label{fig:emp_drift}
+\end{figure}
+
+Table~\ref{tab:emp_bins} and Figure~\ref{fig:emp_drift} look at reversion non-parametrically, by size of dislocation. Inside the band, proportional reversion is zero or slightly negative. Just outside the band (excess below 10 bp) there is no reversion either, and the premium drifts further out on average. This is what the model predicts when order flow is persistent: once flow pushes the premium through the edge of the band, it keeps moving toward the steady state $b^*=c+\beta q/(\lambda K)$ of Proposition~\ref{prop:impact}. Order flow on other lira venues, which we do not observe, also contributes. Beyond 10 bp, reversion switches on: the proportional speed is $0.0052$--$0.0058$ per five minutes, a half-life of about ten hours. For the very largest dislocations (more than 40 bp outside the band, mostly in the first half of 2024), reversion is slower again ($0.0037$). Proposition~\ref{prop:reversion}(c) alone does not predict this. It is, however, what Proposition~\ref{prop:depletion} predicts when large and persistent dislocations coincide with depleted arbitrage capacity. We read it as suggestive evidence of capacity depletion rather than as a clean test.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Reversion by size of dislocation}}
+\label{tab:emp_bins}
+\footnotesize
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/emp_bins.tex}}
+\begin{minipage}{0.95\textwidth}
+\footnotesize\vspace{4pt}
+\emph{Notes:} Proportional reversion $\hat\rho$ is the sum of reversion toward the band (net of $\hat\beta\,\mathit{OFI}_t$) divided by the sum of distances. Distance is measured from the band midpoint for observations inside the band and from the nearest edge for observations outside it. Delta-method standard errors clustered by day in parentheses. Half-lives are in minutes.
+\end{minipage}
+\end{table}
+
+\subsection{Capacity states: banking hours}
+
+The model's sharpest comparative static concerns capacity, and the trading day provides a direct source of variation. During Istanbul business hours, banks process transfers, treasury desks are staffed and the fiat leg of the arbitrage can be executed. Outside business hours, capacity falls even though the crypto market keeps trading. Column (4) of Table~\ref{tab:emp_main} interacts the reversion terms and order flow with an indicator for 09:00--17:00 Istanbul time. Above the band, the speed of arbitrage is $0.0025$ outside business hours and $0.0104$ during them. The difference, $0.0079$ (s.e.\ $0.0014$), is a fourfold increase. The primitive impact of order flow is similar across the two states ($0.64$ and $0.58$). By Proposition~\ref{prop:impact}, the long-run price impact of a sustained one-standard-deviation order-flow imbalance is therefore $\beta/\kappa^+\approx 257$ bp outside business hours and $56$ bp during them. The same demand moves the premium almost five times as much when arbitrage capacity is low. This is Corollary~\ref{cor:equivalence} within a single market. Below the band, the business-hours difference is positive but not significant.
+
+Figure~\ref{fig:emp_intraday} shows the same pattern in levels. The mean absolute deviation of the premium from its daily median is lowest in the early afternoon in Istanbul, about 7 bp. It is roughly twice as large late in the evening, 13--15 bp, when stablecoin volume is still about two thirds of its daytime peak. The local market remains active after banks close; what disappears is the capacity to move money across the fiat leg.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.66\textwidth]{figures/emp_intraday.pdf}
+\caption{\textbf{Intraday pattern.} Bars: mean absolute deviation of the one-minute premium from its daily median, by Istanbul hour (weekdays). Line: mean USDT/TRY volume per minute. The shaded area marks business hours.}
+\label{fig:emp_intraday}
+\end{figure}
+
+\subsection{Integration over time}
+
+Table~\ref{tab:emp_year} estimates~\eqref{eq:emp} separately by year. The primitive price impact of standardized order flow falls from $1.04$ bp in 2024 to $0.43$ in 2025 and $0.25$ in 2026. The speed of arbitrage above the band roughly doubles, from $0.0051$ to $0.0095$. The standard deviation of the premium falls from $74$ to $16$ bp. Through the lens of Proposition~\ref{prop:stationary}, the tails of the premium distribution, governed by $\lambda K/\sigma^2$, tightened as capacity grew. Over these two and a half years the lira stablecoin market became markedly more integrated with the interbank market.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Estimates by year}}
+\label{tab:emp_year}
+\footnotesize
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/emp_year.tex}}
+\begin{minipage}{0.95\textwidth}
+\footnotesize\vspace{4pt}
+\emph{Notes:} Specification~\eqref{eq:emp} with year-specific slopes, month fixed effects and month-specific bands. Standard errors clustered by day.
+\end{minipage}
+\end{table}
+
+\subsection{Who discovers the dollar?}
+
+Proposition~\ref{prop:discovery} says that the share $\omega$ of an arbitrage correction borne by the global price determines how much local information reaches it. We estimate $\omega$ by running~\eqref{eq:emp} separately for the change in the log local price and the change in the log interbank rate (Table~\ref{tab:emp_legs}). Essentially all of the correction happens in the stablecoin market. When the premium is above the band, the local price falls at rate $0.0051$ while the interbank rate does not move ($-0.0002$, s.e.\ $0.0004$), so $\hat\omega=0.04$. Below the band the point estimate is $0.28$, but the global-leg coefficient is not significant. Local order flow moves the local price one-for-one with the premium ($0.61$) and has no effect on the interbank rate ($0.003$, s.e.\ $0.018$). In the language of the title, the dollar's lira price is discovered in the interbank market. The stablecoin market follows it, with a lag governed by arbitrage capacity, and local information that arrives first in the stablecoin market is not impounded into the interbank rate.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Which price adjusts?}}
+\label{tab:emp_legs}
+\footnotesize
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/emp_legs.tex}}
+\begin{minipage}{0.95\textwidth}
+\footnotesize\vspace{4pt}
+\emph{Notes:} Specification~\eqref{eq:emp} with the five-minute change in the log USDT/TRY price (column 1) or the log interbank USD/TRY rate (column 2), in bp, as the dependent variable. $\omega$ is the global price's share of the total correction, $\kappa_G/(\kappa_L+\kappa_G)$. Standard errors clustered by day.
+\end{minipage}
+\end{table}
+
+\paragraph{The 19 March 2025 shock.} The detention of Istanbul's mayor on the morning of 19 March 2025 triggered one of the largest intraday moves in the lira's history. Figure~\ref{fig:emp_event} shows the minute-by-minute response. The interbank rate jumped by up to 11.0\%. USDT/TRY rose by at most 6.0\%, so the premium fell to $-660$ bp at 07:46 UTC, far outside the March band. Consistent with the evidence above, the stablecoin market did not lead the move. The dislocation then closed from both sides: the interbank rate retraced amid heavy official intervention, and the stablecoin price rose. The premium was back inside the band within 75 minutes. By the afternoon both prices were about 3--3.5\% above their pre-shock levels. The episode illustrates Proposition~\ref{prop:reversion}(b). A dislocation far outside the band is corrected quickly, and the correction is fastest when the dislocation is largest.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/emp_event.pdf}
+\caption{\textbf{The 19 March 2025 lira shock.} Panel (a): percentage change in USDT/TRY (Binance VWAP) and interbank USD/TRY since 05:00 UTC. Panel (b): one-minute premium and the band estimated for March 2025.}
+\label{fig:emp_event}
+\end{figure}
+
+\paragraph{Order-flow identification.} Section~\ref{sec:empirics} argued that in-band observations identify the primitive impact $\beta$ free of arbitrage trades. In the data, $\hat\beta$ estimated on in-band observations ($0.56$, s.e.\ $0.03$) is close to, and slightly below, the out-of-band estimate ($0.64$). Arbitrage trades therefore do not appear to contaminate Binance taker flow materially. This is plausible if arbitrageurs execute the local leg on other venues or over the counter.
+
+\subsection{Robustness}
+
+Table~\ref{tab:emp_robust} re-estimates the main specification at one- and fifteen-minute frequencies, with last-trade prices instead of VWAPs, excluding the 19 March -- 30 April 2025 window, with quarterly instead of monthly bands, and with 10\% trimming. The reversion speeds outside the band are positive and significant in every specification. They scale roughly in proportion to the sampling interval, as they should: the fifteen-minute estimates are about three times the five-minute ones. The business-hours increase in $\kappa^+$ is significant at 1\% throughout. Inside-band reversion is statistically zero in four of the six alternatives. It is small but positive with quarterly bands and at the fifteen-minute frequency, where it is one fifth or less of the outside-band speed. Coarser bands mechanically put some out-of-band observations inside the band, which is the expected direction of that bias.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Robustness}}
+\label{tab:emp_robust}
+\footnotesize
+\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/emp_robust.tex}}
+\begin{minipage}{0.95\textwidth}
+\footnotesize\vspace{4pt}
+\emph{Notes:} Each row re-estimates columns (2)--(4) of Table~\ref{tab:emp_main}. ``In-band reversion'' is the coefficient on $-(b_{t-1}-m_m)\mathbb 1\{\text{in band}\}$ in column (3). The last column is the business-hours interaction on $\kappa^+$ in column (4). Reversion coefficients are per sampling interval. Standard errors clustered by day.
+\end{minipage}
+\end{table}
+
+\paragraph{Limitations.} Three caveats apply. First, we observe order flow on one venue; flow on other lira venues and over the counter is part of the residual. Second, the interbank benchmark is an offshore quote; at night it is thinner, which could add noise to the premium outside business hours. However, its median spread is about 1 bp, so the fourfold difference in arbitrage speed is unlikely to be a quoting artifact. Third, the band is identified from the dynamics of the premium alone. Direct measures of arbitrage capacity, such as exchange withdrawal data or bank transfer limits, would allow a sharper test of Propositions~\ref{prop:depletion} and~\ref{prop:network}.
+
+%=====================================================================
 \section{Simulation evidence}\label{sec:mc}
 %=====================================================================
 
@@ -465,7 +633,11 @@ Table~\ref{tab:bins} implements test T2 on a long simulated path. Reversion is a
 \section{Conclusion}\label{sec:conclusion}
 %=====================================================================
 
-The law of one price for dollar stablecoins holds only as far as arbitrage capacity allows. We have shown that two primitive frictions, a proportional cost and a finite capacity, turn the local stablecoin premium into a threshold diffusion with a closed-form stationary law. The same frictions separate what trading volume reveals (demand) from what the premium reveals (capacity). They make long-run price impact convex and bounded by an arbitrage throughput limit. They filter which local information reaches the global price. And they make centralized arbitrage networks both efficient and fragile. The estimator we propose recovers these frictions from high-frequency premium and order-flow data. Applied to local stablecoin markets in economies with capital controls, it can answer the question in the title: whether a local market helps discover the dollar's value, or only pays to access it.
+The law of one price for dollar stablecoins holds only as far as arbitrage capacity allows. Two primitive frictions, a proportional cost and a finite capacity, turn the local stablecoin premium into a threshold diffusion with a closed-form stationary law. The same frictions separate what trading volume reveals (demand) from what the premium reveals (capacity). They make long-run price impact convex and bounded by an arbitrage throughput limit. They filter which local information reaches the global price, and they make centralized arbitrage networks both efficient and fragile.
+
+The lira stablecoin market bears these predictions out. Premia inside a band of a few tens of basis points do not revert. Arbitrage switches on outside the band and is four times faster when banks are open. The stablecoin market does the adjusting while the interbank market sets the price, and the market has integrated rapidly as capacity has grown. Natural next steps are to measure capacity directly, using exchange withdrawal flows and bank transfer limits, and to compare markets with different capital-control regimes, such as the naira, peso and won markets, where the model predicts different bands for the same demand. Both would sharpen the answer to the question in the title: whether a local market helps discover the dollar's value, or only pays to access it.
+
+\paragraph{Data and code availability.} All data used in this paper are public: Binance spot candles (\url{https://data.binance.vision}) and Dukascopy interbank candles. Code that downloads the data and reproduces every table and figure is available from the authors.
 
 \newpage
 \singlespacing

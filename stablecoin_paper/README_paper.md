@@ -1,8 +1,15 @@
 # Who Discovers the Dollar? — Stern/Salomon Microstructure submission
 
-- `paper.pdf` / `paper.tex`: the submission.
-- `code/run_all.py`: reproduces every figure and table (`pip install numpy scipy matplotlib numba`; ~3 min).
-- `code/estimate_real.py data.csv TRY`: runs the paper's estimator on minute-level local USDT data
-  (columns: timestamp, local_price, benchmark_price, buy_volume, sell_volume) and writes `tables/real_TRY.tex`.
+- `paper.pdf` / `paper.tex`: the submission (build: `pdflatex paper.tex && pdflatex paper.tex`).
 
-Build: `pdflatex paper.tex && pdflatex paper.tex`
+## Reproduce (Python 3.11; `pip install numpy scipy pandas pyarrow matplotlib numba pymupdf`)
+1. `python code/download_binance.py` — Binance public 1-minute klines (USDT/TRY, BTC/TRY, BTC/USDT; also NGN pairs).
+2. `python code/download_dukascopy.py` — Dukascopy interbank USD/TRY 1-minute candles (rate-limited; retries automatically).
+3. `python code/build_panel.py TRY` — builds `data_raw/panel_TRY.parquet`.
+4. `BOOT=99 python code/empirics_main.py` — Section 6 tables (`tables/emp_*.tex`) and figures (`figures/emp_*.pdf`, `figures/hero.pdf`).
+5. Robustness: `TAG=_f1 FREQ=1min`, `TAG=_f15 FREQ=15min`, `TAG=_close PRICE=close`, `TAG=_excl EXCL=2025-03-19,2025-04-30`,
+   `TAG=_q BAND=Q`, `TAG=_trim10 TRIM=0.10` (each with `BOOT=0 python code/empirics_main.py`), then `python code/robust_table.py`.
+6. `python code/run_all.py` — theory figures and Monte Carlo (Section 7).
+
+`code/estimate_real.py` runs the basic estimator on any CSV with columns
+timestamp, local_price, benchmark_price, buy_volume, sell_volume (e.g., for NGN data from other sources).

@@ -6,7 +6,7 @@ a*(b) = Kp*(b - cp)_+ - Km*(-b - cm)_+.
 Units: premium in basis points, time in minutes.
 """
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 
 def arb_policy(b, Kp, Km, cp, cm):
@@ -100,12 +100,15 @@ def _ar1(e, rho, sd):
     return q
 
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
 def _ssr_grid(y, x, q, grid_p, grid_m):
     n = y.shape[0]
     out = np.empty((grid_p.shape[0], grid_m.shape[0]))
-    for i in range(grid_p.shape[0]):
+    for i in prange(grid_p.shape[0]):
         for j in range(grid_m.shape[0]):
+            if -grid_m[j] > grid_p[i]:
+                out[i, j] = np.inf
+                continue
             A = np.zeros((4, 4)); v = np.zeros(4); yy = 0.0
             r = np.empty(4)
             for t in range(n):
