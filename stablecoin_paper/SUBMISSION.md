@@ -13,14 +13,14 @@
 - JEL: G12, G14, G15, F31
 
 ## Short abstract (for the web form, ~150 words)
-Why does the same dollar order flow move a local stablecoin price much more at some times than at others? The answer is
-effective arbitrage capacity, the speed at which arbitrage closes a dislocation, and banking access governs it.
-Arbitrageurs with a per-unit transfer cost and a convex balance-sheet cost leave the premium untouched inside a band and
-trade against it outside. Minute data on USDT against the Turkish lira (2024-2026) identify this from three sides.
-Prices: no reversion inside a band of about 30 bp, and three to five times faster reversion outside it when Istanbul
-banks are open. Trades: small and medium trades move with the dislocation, large trades lean against it, and the
-large-trade response rises with bank opening by the same factor as the price-side speed; on bank holidays neither
-rises. Price discovery: the stablecoin price carries the entire correction toward the interbank rate.
+Why does the same order-flow shock have such different price impact over the trading day? The answer is effective
+arbitrage capacity, the speed at which arbitrage closes a dislocation, and access to banking rails governs it.
+Arbitrageurs facing transfer frictions and convex balance-sheet costs leave the local stablecoin premium untouched inside
+a band and trade against it outside. In minute data on USDT against the Turkish lira (2024-2026), the premium does not
+mean-revert inside a band of roughly 30 bp; above the band it reverts three to five times faster when Istanbul banks are
+open. Large trades lean against dislocations while small and medium trades move with them, and the large-trade response
+rises with bank opening by a factor statistically indistinguishable from the price-side response; on weekday public
+holidays both stay at closed-bank levels. Corrections are detectable in the stablecoin price but not in the interbank rate.
 
 ## Optional dual submission to the Journal of Financial Markets
 Ticking the dual-submission box also sends the paper to JFM; it requires certifying the paper is not under review

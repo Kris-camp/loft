@@ -196,96 +196,101 @@ ax[0].set_ylabel(r"reversion speed outside the band, $\hat\kappa$")
 ax[0].legend(frameon=False, fontsize=8, loc="upper left")
 fig.tight_layout(); fig.savefig(os.path.join(FIG, "emp_eventtime.pdf")); plt.close(fig)
 
-# ------------------------------------------------------------------ 4. counterfactual: 24/7 banking
-# Simulate the premium on the observed sample with observed order flow and bootstrapped residuals.
-# Baseline: state-specific speeds; counterfactual: open-hours speeds at all times. Bands, beta,
-# month effects and residuals are held fixed.
-st = json.load(open(os.path.join(TAB, "emp_state.json")))["state_bands"]["coef"]
-kp_c, kp_o = st["up_s"][0], st["up_s"][0] + st["up_s_bh"][0]
-km_c, km_o = st["dn_s"][0], st["dn_s"][0] + st["dn_s_bh"][0]
-b_q = st["q"][0]
-sim = a[["x", "y", "q", "l", "u", "bh", "month", "day"]].copy()
-up = -np.maximum(sim.x - sim.u, 0); dn = np.maximum(sim.l - sim.x, 0)
-kp = np.where(sim.bh == 1, kp_o, kp_c); km = np.where(sim.bh == 1, km_o, km_c)
-resid = sim.y - b_q * sim.q - kp * up - km * dn
-alpha = resid.groupby(sim.month).transform("mean")
-eps = (resid - alpha).values
-newseg = np.r_[True, np.diff(sim.index.values).astype("timedelta64[s]").astype(int) != 300]
-q = sim.q.values; L = sim.l.values; U = sim.u.values; BH = sim.bh.values; al = alpha.values; x0 = sim.x.values
-dem = (a.vol_small.fillna(0) + a.vol_mid.fillna(0)).values
+# ------------------------------------------------------------------ 4. counterfactual: 24/7 banking (historical-shock replay)
+# Fit the state-specific threshold model, recover the realized residual of every interval, and
+# replay history: the baseline recursion with realized residuals, order flow, bands, month-by-state
+# effects and banking state reproduces the observed path exactly. The counterfactual changes only
+# the closed-hours speeds to their open-hours values; every realized shock is held fixed.
+# Parameter uncertainty: speeds drawn from their day-clustered sampling distribution.
+cfd = a.copy()
+cfd["up_s"] = -np.maximum(cfd.x - cfd.u, 0); cfd["dn_s"] = np.maximum(cfd.l - cfd.x, 0)
+for c in ["q", "up_s", "dn_s"]:
+    cfd[c + "_bh"] = cfd[c] * cfd.bh
+cfd["ms"] = cfd.month + "_" + np.where(cfd.bh == 1, "open", "closed")
+pc = ["q", "up_s", "dn_s", "q_bh", "up_s_bh", "dn_s_bh"]
+Yd = cfd.y.values; Xd = cfd[pc].values
+gm = cfd.groupby("ms")
+Yw = Yd - gm.y.transform("mean").values; Xw = Xd - gm[pc].transform("mean").values
+XtXi = np.linalg.inv(Xw.T @ Xw); bh_ = XtXi @ Xw.T @ Yw; ew = Yw - Xw @ bh_
+codes = pd.factorize(cfd.day)[0]
+Gs = np.zeros((codes.max() + 1, len(pc))); np.add.at(Gs, codes, Xw * ew[:, None])
+Vb = XtXi @ Gs.T @ Gs @ XtXi
+par = dict(zip(pc, bh_))
+alpha_ms = (cfd.y - Xd @ bh_).groupby(cfd.ms).transform("mean").values
+q_ = cfd.q.values; L_ = cfd.l.values; U_ = cfd.u.values; BH_ = cfd.bh.values.astype(np.float64)
+x_ = cfd.x.values
+seg_ = np.r_[True, np.diff(cfd.index.values).astype("timedelta64[s]").astype(np.int64) != 300]
+beta_eff = par["q"] + par["q_bh"] * BH_
+eps_ = cfd.y.values - alpha_ms - beta_eff * q_ \
+    - (par["up_s"] + par["up_s_bh"] * BH_) * (-np.maximum(x_ - U_, 0)) \
+    - (par["dn_s"] + par["dn_s_bh"] * BH_) * np.maximum(L_ - x_, 0)
+dem = (cfd.vol_small.fillna(0) + cfd.vol_mid.fillna(0)).values
+
+from numba import njit
 
 
-def simulate(kp_open, kp_closed, km_open, km_closed, seed):
-    rng = np.random.default_rng(seed)
-    e = eps[rng.integers(0, len(eps), len(eps))]
-    out = np.empty(len(q)); b = x0[0]
-    for t in range(len(q)):
-        if newseg[t]: b = x0[t]
+@njit(cache=True)
+def replay(x0, seg, L, U, BH, alpha, beta_eff, q, eps, kpo, kpc, kmo, kmc):
+    n = len(q); out = np.empty(n); b = x0[0]
+    for t in range(n):
+        if seg[t]: b = x0[t]
         out[t] = b
-        kpp = kp_open if BH[t] == 1 else kp_closed
-        kmm = km_open if BH[t] == 1 else km_closed
-        b = b + al[t] + b_q * q[t] - kpp * max(b - U[t], 0) + kmm * max(L[t] - b, 0) + e[t]
+        kp = kpo if BH[t] == 1.0 else kpc
+        km = kmo if BH[t] == 1.0 else kmc
+        b = b + alpha[t] + beta_eff[t] * q[t] - kp * max(b - U[t], 0.0) + km * max(L[t] - b, 0.0) + eps[t]
     return out
 
 
-try:
-    from numba import njit
-    @njit(cache=True)
-    def _sim(q, L, U, BH, al, x0, newseg, e, b_q, kpo, kpc, kmo, kmc):
-        out = np.empty(len(q)); b = x0[0]
-        for t in range(len(q)):
-            if newseg[t]: b = x0[t]
-            out[t] = b
-            kpp = kpo if BH[t] == 1 else kpc
-            kmm = kmo if BH[t] == 1 else kmc
-            b = b + al[t] + b_q * q[t] - kpp * max(b - U[t], 0.0) + kmm * max(L[t] - b, 0.0) + e[t]
-        return out
-
-    def simulate(kpo, kpc, kmo, kmc, seed):
-        rng = np.random.default_rng(seed)
-        e = eps[rng.integers(0, len(eps), len(eps))]
-        return _sim(q, L, U, BH.astype(np.float64), al, x0, newseg, e, b_q, kpo, kpc, kmo, kmc)
-except Exception:
-    pass
-
-
 def stats(path):
-    exc = np.maximum(path - U, 0) + np.maximum(L - path, 0)
-    mid = (L + U) / 2
+    exc = np.maximum(path - U_, 0) + np.maximum(L_ - path, 0)
+    mid = (L_ + U_) / 2
     out = exc > 0
-    # durations of excursions outside the band (in minutes)
     runs, cur = [], 0
-    for o, ns in zip(out, newseg):
+    for o, ns in zip(out, seg_):
         if ns and cur: runs.append(cur); cur = 0
         if o: cur += 1
         elif cur: runs.append(cur); cur = 0
     if cur: runs.append(cur)
-    return dict(sd=float(np.std(path - mid)), p50=float(np.mean(exc > 50)), mean_exc=float(np.mean(exc)),
-                dur=float(np.mean(runs) * 5 if runs else 0.0), wedge=float(np.sum(dem * exc) / np.sum(dem)))
+    return dict(sd=float(np.std(path - mid)), p50=float(np.mean(exc > 50)), p25=float(np.mean(exc > 25)),
+                mean_exc=float(np.mean(exc)), dur=float(np.mean(runs) * 5 if runs else 0.0),
+                wedge=float(np.sum(dem * exc) / np.sum(dem)))
 
 
-R_SIM = 40
-base = [stats(simulate(kp_o, kp_c, km_o, km_c, s)) for s in range(R_SIM)]
-cf = [stats(simulate(kp_o, kp_o, km_o, km_o, s)) for s in range(R_SIM)]
-data = stats(sim.x.values)
-agg = lambda L_: {k: float(np.mean([d[k] for d in L_])) for k in L_[0]}
-B_, C_ = agg(base), agg(cf)
-OUT["counterfactual"] = dict(data=data, baseline=B_, cf=C_,
-                             change={k: float(C_[k] / B_[k] - 1) for k in B_}, R=R_SIM)
+kpc, kpo = par["up_s"], par["up_s"] + par["up_s_bh"]
+kmc, kmo = par["dn_s"], par["dn_s"] + par["dn_s_bh"]
+base_path = replay(x_, seg_, L_, U_, BH_, alpha_ms, beta_eff, q_, eps_, kpo, kpc, kmo, kmc)
+OUT["replay_max_abs_err"] = float(np.max(np.abs(base_path - x_)))
+B_ = stats(base_path); D_ = stats(x_)
+C_ = stats(replay(x_, seg_, L_, U_, BH_, alpha_ms, beta_eff, q_, eps_, kpo, kpo, kmo, kmo))
+rng = np.random.default_rng(1)
+draws = rng.multivariate_normal(bh_, Vb, size=200)
+chg = []
+for dr in draws:
+    p = dict(zip(pc, dr))
+    kpc_, kpo_ = p["up_s"], p["up_s"] + p["up_s_bh"]; kmc_, kmo_ = p["dn_s"], p["dn_s"] + p["dn_s_bh"]
+    be = p["q"] + p["q_bh"] * BH_
+    # keep the replay exact under each draw: recompute residuals and effects for the drawn parameters
+    al = (cfd.y.values - Xd @ dr)
+    al = pd.Series(al).groupby(cfd.ms.values).transform("mean").values
+    ep = cfd.y.values - al - be * q_ - (kpc_ + (kpo_ - kpc_) * BH_) * (-np.maximum(x_ - U_, 0)) \
+        - (kmc_ + (kmo_ - kmc_) * BH_) * np.maximum(L_ - x_, 0)
+    b0 = stats(replay(x_, seg_, L_, U_, BH_, al, be, q_, ep, kpo_, kpc_, kmo_, kmc_))
+    c0 = stats(replay(x_, seg_, L_, U_, BH_, al, be, q_, ep, max(kpo_, 0), max(kpo_, 0), max(kmo_, 0), max(kmo_, 0)))
+    chg.append({k: c0[k] / b0[k] - 1 for k in b0})
+CH = pd.DataFrame(chg)
+ci = {k: [float(CH[k].quantile(.05)), float(CH[k].quantile(.95))] for k in CH}
+OUT["counterfactual"] = dict(method="historical-shock replay", data=D_, baseline=B_, cf=C_,
+                             change={k: float(C_[k] / B_[k] - 1) for k in B_}, ci90=ci,
+                             speeds=dict(kpc=float(kpc), kpo=float(kpo), kmc=float(kmc), kmo=float(kmo)))
 with open(os.path.join(TAB, "emp_cf.tex"), "w") as fh:
-    fh.write("\\begin{tabular}{lcccc}\n\\toprule\n & Data & Model: & Counterfactual: & Change \\\\\n"
-             " & & observed banking hours & banks always open & \\\\\n\\midrule\n")
-    rows = [("SD of premium around band midpoint (bp)", "sd", "{:.1f}"), ("Share of time $>50$ bp outside band", "p50", "{:.3f}"),
-            ("Mean distance outside band (bp)", "mean_exc", "{:.1f}"), ("Mean duration of an excursion (min)", "dur", "{:.0f}"),
-            ("Volume-weighted wedge on small/medium trades (bp)", "wedge", "{:.1f}")]
+    fh.write("\\begin{tabular}{lccc}\n\\toprule\n & Observed history & Counterfactual: & Change \\\\\n"
+             " & (exact replay) & banks always open & [90\\% interval] \\\\\n\\midrule\n")
+    rows = [("SD of premium around band midpoint (bp)", "sd", "{:.1f}"), ("Share of time $>25$ bp outside band", "p25", "{:.3f}"),
+            ("Share of time $>50$ bp outside band", "p50", "{:.3f}"), ("Mean distance outside band (bp)", "mean_exc", "{:.1f}"),
+            ("Mean duration of an excursion (min)", "dur", "{:.0f}"), ("Volume-weighted wedge on small/medium trades (bp)", "wedge", "{:.1f}")]
     for lab, k_, f in rows:
-        fh.write(f"{lab} & {f.format(data[k_])} & {f.format(B_[k_])} & {f.format(C_[k_])} & {100*(C_[k_]/B_[k_]-1):.0f}\\% \\\\\n")
+        fh.write(f"{lab} & {f.format(B_[k_])} & {f.format(C_[k_])} & {100*(C_[k_]/B_[k_]-1):.0f}\\% [{100*ci[k_][0]:.0f}, {100*ci[k_][1]:.0f}] \\\\\n")
     fh.write("\\bottomrule\n\\end{tabular}\n")
-
-json.dump(OUT, open(os.path.join(TAB, "emp_mech.json"), "w"), indent=1, default=float)
-print(json.dumps({k: v for k, v in OUT.items() if k != "event_time"}, indent=1, default=float))
-for name in ev:
-    print(name); print(pd.DataFrame(ev[name]).round(4).to_string())
 
 # ------------------------------------------------------------------ 5. daily cycle with holiday placebo
 ih = (a.index.hour + 3) % 24
@@ -375,7 +380,7 @@ for v, col, mk, lab in [(a.dpl.values, C1, "o", "USDT/TRY price"), (a.dpg.values
     x_, m_, s_ = binned(vv, allm)
     D.errorbar(x_, m_, yerr=1.96 * s_, fmt=mk + "-", ms=3.2, color=col, ecolor=col, lw=0.8, label=lab)
 D.axhline(0, color="k", lw=0.4); D.legend(frameon=False, fontsize=8)
-D.set_title("(d) The stablecoin price does the adjusting", fontsize=9.5)
+D.set_title("(d) The stablecoin price adjusts; the interbank rate does not", fontsize=9.5)
 D.set_ylabel("expected 5-min log change (bp)"); D.set_xlabel("signed distance outside the band (bp)")
 fig.tight_layout(); fig.savefig(os.path.join(FIG, "hero4.pdf")); plt.close(fig)
 json.dump(OUT, open(os.path.join(TAB, "emp_mech.json"), "w"), indent=1, default=float)
