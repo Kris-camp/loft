@@ -1,0 +1,629 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[authoryear,round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{enumitem}
+
+\onehalfspacing
+\captionsetup{font=small,labelfont=bf}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newcommand{\sgn}{\operatorname{sign}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\pos}[1]{\left(#1\right)_+}
+
+\title{\textbf{Who Discovers the Dollar?}\\[4pt]
+\large Arbitrage Capacity and Price Discovery in Fragmented Stablecoin Markets}
+
+\author{[Author names and affiliations]\thanks{[Contact information.] We thank [acknowledgements]. All errors are our own.}}
+
+\date{October 2026\\[6pt] \small Preliminary and incomplete}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Identical dollar stablecoins trade at persistent, time-varying premia across local-currency markets, and the same order-flow imbalance moves the local premium a lot in some markets and barely at all in others. We argue that the missing state variable is \emph{arbitrage capacity}. In a model where arbitrageurs face a proportional transfer cost and a convex balance-sheet cost, optimal arbitrage is zero inside a no-arbitrage band and linear in the size of the dislocation outside it. The local premium then follows a threshold diffusion with a closed-form stationary law: a flat plateau inside the band and Gaussian tails outside it. The model gives five results. Small premia are martingales while large ones revert, so proportional reversion speed rises with the size of the dislocation. The long-run price impact of order flow equals primitive impact divided by capacity, so trading volume reveals demand while the premium reveals capacity. When arbitrage depletes capacity, long-run price impact is convex and the premium diverges once order flow exceeds an arbitrage throughput limit. The band stops small local information from reaching the global price. In a multi-venue network, cross-venue dispersion is bounded by the algebraic connectivity of the active arbitrage graph, so hub-and-spoke arbitrage is efficient in normal times but fragile to the failure of the hub. We provide a profiled threshold estimator that recovers the band, capacity and order-flow impact from high-frequency premium and order-flow data, and we show by simulation that linear error-correction models misstate both the speed of arbitrage and the price impact of order flow.
+
+\bigskip
+\noindent\textbf{Keywords:} stablecoins, limits to arbitrage, market fragmentation, price discovery, order flow, threshold dynamics
+
+\noindent\textbf{JEL:} G12, G14, G15, F31
+\end{abstract}
+
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+%=====================================================================
+\section{Introduction}
+%=====================================================================
+
+Dollar stablecoins such as USDT are, by design, the same asset everywhere. Yet in local-currency markets (Turkish lira, Nigerian naira, Argentine peso, Korean won) the dollar-equivalent price of one USDT regularly deviates from parity by tens or hundreds of basis points, and these deviations can last for hours or days. The deviations are not simply a reflection of local demand. Two markets with similar signed order-flow imbalances can display very different premia, and a market with heavy trading volume can contribute little to the formation of the global dollar price. Volume, order flow and price impact, the standard microstructure statistics, appear to be only loosely connected.
+
+This paper argues that the connection runs through a single latent object, \emph{arbitrage capacity}, and it builds a model in which that object can be measured from high-frequency data. The premise is simple. Arbitrage between a local stablecoin market and the global dollar market is not frictionless and is not unlimited. Moving value across the two legs requires on- and off-ramps, banking rails, exchange withdrawals and, in some jurisdictions, access to foreign exchange. These frictions impose a per-unit cost. Arbitrageurs also have finite balance sheets and inventory tolerance, which makes large positions increasingly costly. We show that these two ingredients alone, a proportional cost $c$ and a capacity parameter $K$ that governs the convexity of balance-sheet costs, are enough to turn the textbook linear error-correction picture into a qualitatively different object with sharp, testable implications.
+
+\paragraph{Mechanism.}
+The arbitrageur chooses a flow $a$ to maximize $ab - c|a| - a^2/(2K)$, where $b$ is the log premium of the local market over the global benchmark. The solution is a soft-threshold rule,
+\[
+a^*(b) = K \,\sgn(b)\,\pos{|b|-c},
+\]
+which is zero inside the band $[-c,c]$ and linear in the excess dislocation outside it. Feeding this policy into the premium dynamics, where non-arbitrage order flow $q_t$ pushes the premium with impact $\beta$ and arbitrage flow pushes it back with impact $\lambda$, gives a \emph{threshold diffusion}:
+\[
+db_t = \beta q_t\,dt - \lambda K\,\sgn(b_t)\pos{|b_t|-c}\,dt + \sigma\,dW_t .
+\]
+The noise term is not the point. The economic content sits in the drift, which is zero over an interval and has a kink at its edges. This differs from a model that simply replaces Brownian motion with a richer stochastic process.
+
+\paragraph{Results.}
+The model delivers a set of closed-form results.
+
+\emph{(i) Inaction and state-dependent reversion.} Inside the band the premium is a martingale: small dislocations do not revert and can persist indefinitely. Outside it, the excess decays at rate $\lambda K$, with half-life $\ln 2/(\lambda K)$. The proportional speed of reversion, $\lambda K(1-c/|b|)$, therefore \emph{rises} with the size of the dislocation. Large mispricings correct faster than small ones. A linear error-correction model fitted to such data averages these speeds and gets both wrong.
+
+\emph{(ii) Volume reveals demand; the premium reveals capacity.} With persistent order flow $q$, the premium settles at $b^* = c + \beta q/(\lambda K)$. The long-run price impact of order flow is $\beta/(\lambda K)$, inversely proportional to capacity. Steady-state arbitrage volume, by contrast, equals $\beta q/\lambda$ and does not depend on $K$ at all. Two markets with identical demand can therefore have identical arbitrage volume and very different premia, and two markets with identical premia can have very different demand. This turns the empirical puzzle of mismatched volume, order flow and premia into a statement about latent capacity.
+
+\emph{(iii) A closed-form stationary law.} With mean-zero order flow, the stationary density of the premium is flat on the band and Gaussian outside it, with tail precision $\lambda K/\sigma^2$. The band width, the capacities on each side and the volatility map one-to-one into the shape of the distribution. Asymmetric frictions ($c^+\neq c^-$, $K^+\neq K^-$) generate a non-zero average premium even when order flow has mean zero, so a persistent average premium is not, by itself, evidence of excess local demand.
+
+\emph{(iv) Capacity depletion and a throughput limit.} When arbitrage consumes capacity that replenishes at a finite rate, there is a critical order flow $q_{crit}$. Below it, long-run price impact is convex and explodes as $q\uparrow q_{crit}$. Above it, no steady state exists and the premium grows at least linearly in time. The maximal sustainable arbitrage flow, not the size of any one arbitrageur's balance sheet, is what bounds the market's ability to absorb demand. This captures, in a fragmented-market setting, the funding-liquidity spirals of \citet{brunnermeier2009market} and the slow-moving capital of \citet{duffie2010presidential}.
+
+\emph{(v) Price discovery.} A local information shock of size $\delta$ reaches the global price only to the extent that it exceeds the band. By horizon $h$, the fraction incorporated is $\omega(1-c/\delta)_+(1-e^{-\lambda K h})$, where $\omega$ is the global leg's share of arbitrage price impact. Frictions determine \emph{how much} local information is ever transmitted; capacity determines \emph{how fast}. A segmented market can be very active and still discover very little of the dollar's value.
+
+\emph{(vi) Networks of venues.} With many venues linked by pairwise threshold arbitrage, the long-run expected cross-venue dispersion is bounded by a constant divided by the algebraic connectivity $\lambda_2$ of the capacity-weighted arbitrage graph. Among minimal (tree) arbitrage networks the hub-and-spoke star attains the largest $\lambda_2$, so centralizing arbitrage through a hub maximizes normal-time integration. But removing the hub disconnects the network, and dispersion then grows without bound. Centralized arbitrage is efficient and fragile at the same time.
+
+\paragraph{Measurement.}
+The model maps into a discrete-time threshold regression,
+\[
+\Delta b_{t+1} = \alpha + \beta\,\mathit{OFI}_t - \kappa^+\pos{b_t - c^+} + \kappa^-\pos{-b_t - c^-} + \varepsilon_{t+1},
+\qquad \kappa^\pm = \lambda K^\pm,
+\]
+which we estimate by profiling the sum of squared residuals over $(c^+,c^-)$. The structural objects of interest are the band $(c^+,c^-)$, the capacity-scaled reversion speeds $\kappa^\pm$, the primitive impact $\beta$ and the long-run impact multiplier $\beta/\kappa^\pm$. The model also offers an identification device. Inside the band arbitrage flow is zero, so all observed order flow is non-arbitrage flow. In-band observations therefore identify the primitive impact $\beta$ free of the mechanical contamination that arises when arbitrageurs' own trades are part of measured order flow. Monte Carlo evidence shows that the estimator recovers all parameters accurately at sample sizes of a few weeks of minute data. A linear error-correction model fitted to the same data understates the speed of arbitrage outside the band by a factor of two to eight across our designs, and it implies mean reversion inside the band, where none exists.
+
+\paragraph{Application.}
+The framework is designed for local USDT markets in high-inflation, capital-controlled economies, where the local premium, local signed order flow and proxies for arbitrage capacity (banking-hour and weekend effects, transfer-rail outages, exchange withdrawal suspensions, regulatory announcements) are all observed at high frequency. The Turkish lira and Nigerian naira markets offer a natural contrast: both have intense retail demand for dollar stablecoins, but they differ sharply in the frictions faced by arbitrageurs. The model predicts that differences in measured premia and price impact between such markets reflect differences in $(c, K)$ rather than in demand. Section~\ref{sec:empirics} lays out the empirical design. The empirical application is in progress.
+
+\paragraph{Related literature.}
+The paper sits at the intersection of four literatures.
+
+\emph{Cross-market crypto arbitrage.} \citet{makarov2020trading} document large and persistent cross-country deviations in cryptocurrency prices, link them to capital controls, and show that signed volume co-moves with spreads. \citet{hautsch2024building} show that settlement latency limits cross-exchange arbitrage, and \citet{griffin2020untethered} study the interaction of stablecoin issuance and crypto prices. \citet{hu2023competition} model how arbitrageurs endogenously connect exchanges and show that star-shaped arbitrage networks can arise in equilibrium. We take the network as given and ask what its topology implies for convergence and fragility. Our contribution relative to this literature is a microstructure model in which a single state variable, arbitrage capacity, governs both the mapping from order flow to the premium and the transmission of local information to the global price, with closed-form, testable implications.
+
+\emph{Stablecoin stability and arbitrage.} \citet{lyons2023stablecoins} study the arbitrage that keeps stablecoins close to their peg. \citet{ma2025stablecoin} show that concentrating primary-market arbitrage in a few authorized intermediaries trades off price stability in normal times against run risk. Our network result is the secondary-market, cross-venue analogue of their trade-off. \citet{aldasoro2026stablecoin} show that stablecoin inflows spill over into FX markets and widen parity deviations, and they interpret the non-linearity through constrained arbitrage. We provide a high-frequency, microstructure foundation for that interpretation and a way to measure the constraint directly.
+
+\emph{Limits to arbitrage and slow-moving capital.} The arbitrageur problem builds on \citet{shleifer1997limits}, \citet{gromb2002equilibrium}, \citet{brunnermeier2009market}, \citet{mitchell2007slow} and \citet{duffie2010presidential}. Deviations from covered interest parity \citep{du2018deviations} are a leading example in traditional markets of arbitrage-capacity-driven basis. The band structure echoes the commodity-points literature in international economics \citep{dumas1992dynamic, obstfeld1997nonlinear} and threshold cointegration \citep{balke1997threshold, hansen2002testing}. We derive the threshold from an arbitrageur's optimization, connect it to order flow, and characterize its implications for price discovery and network fragility.
+
+\emph{Fragmentation and price discovery.} Our price-discovery result complements the information-share approach of \citet{hasbrouck1995one} and \citet{gonzalo1995estimation}, which is built on linear error correction. Under threshold arbitrage, the contribution of a venue to price discovery depends on the size of the information it receives, so linear information shares average over economically distinct regimes. \citet{lehar2024fragmentation} show how fixed costs fragment liquidity across fee tiers within a decentralized exchange. We study fragmentation across venues and currencies and focus on its implications for convergence.
+
+The remainder of the paper is organized as follows. Section~\ref{sec:model} presents the model. Section~\ref{sec:implications} derives its implications. Section~\ref{sec:network} studies networks of venues. Section~\ref{sec:empirics} develops the estimator and the empirical design. Section~\ref{sec:mc} reports simulation evidence. Section~\ref{sec:conclusion} concludes. Proofs are in the Appendix.
+
+%=====================================================================
+\section{Model}\label{sec:model}
+%=====================================================================
+
+\subsection{Markets and the premium}
+
+There are two markets for the same dollar stablecoin. In the \emph{local} market the stablecoin trades against a local currency; in the \emph{global} market it trades against the U.S. dollar (or a dollar benchmark such as a deep USDT/USD or USDC/USDT book). Let $P^L_t$ denote the local price converted into dollars at a reference exchange rate, and $P^G_t$ the global dollar price. The object of interest is the log premium
+\[
+b_t \equiv \log P^L_t - \log P^G_t .
+\]
+In a frictionless integrated market $b_t\equiv 0$. Which exchange rate is used for the conversion determines the economic interpretation. Converting at the official rate makes $b_t$ a measure of the parallel-market premium, while converting at a contemporaneous local market rate (for example, a local BTC/USDT cross) isolates the stablecoin-specific basis. The model applies to either.
+
+Time is continuous. Three forces move the premium.
+
+\emph{Non-arbitrage order flow.} End users (households seeking dollar exposure, importers, remitters) generate signed order flow $q_t$ in the local market, measured as buyer-initiated minus seller-initiated volume. Absent arbitrage, order flow moves the premium with primitive impact $\beta>0$.
+
+\emph{Arbitrage flow.} A competitive arbitrage sector chooses a flow $a_t$ (units per unit time). A positive $a_t$ sells the stablecoin locally and buys it globally, which lowers the premium. Arbitrage moves the local price with impact $\lambda_L$ and the global price with impact $\lambda_G$, so its effect on the premium is $\lambda\equiv\lambda_L+\lambda_G$.
+
+\emph{Noise.} Everything else, including transient liquidity shocks and quote noise, is captured by $\sigma\,dW_t$, where $W$ is a standard Brownian motion.
+
+\subsection{The arbitrage sector}
+
+\begin{assumption}[Arbitrage technology]\label{ass:arb}
+Arbitrage in the positive (negative) direction incurs a proportional cost $c^+>0$ ($c^->0$) per unit, reflecting fees, on/off-ramp costs, FX access and transfer frictions. Holding a flow of size $|a|$ incurs a convex balance-sheet and inventory cost $a^2/(2K^\pm)$, where $K^\pm>0$ is the \emph{arbitrage capacity} in each direction. The arbitrage sector chooses $a_t$ to maximize flow profit
+\begin{equation}\label{eq:arbprofit}
+\Pi(a;b) =
+\begin{cases}
+ab - c^+a - \dfrac{a^2}{2K^+}, & a\ge 0,\\[8pt]
+ab + c^-a - \dfrac{a^2}{2K^-}, & a<0.
+\end{cases}
+\end{equation}
+\end{assumption}
+
+The proportional cost $c^\pm$ captures every friction that scales with the size of the trade: exchange and network fees, the spread paid on the fiat leg, and the expected cost of on- and off-ramps. Capacity $K^\pm$ captures everything that makes the \emph{marginal} unit costlier: finite capital, inventory risk while transfers settle, counterparty limits at banks and payment providers, and withdrawal limits at exchanges. Allowing both to depend on direction is essential in capital-controlled economies. Buying stablecoins with local currency and moving the dollars abroad is generally harder than the reverse, so one expects $c^+\neq c^-$ and $K^+\neq K^-$.
+
+\begin{proposition}[Optimal arbitrage]\label{prop:policy}
+Under Assumption~\ref{ass:arb}, the unique optimal arbitrage flow is
+\begin{equation}\label{eq:policy}
+a^*(b) = K^+\pos{b-c^+} - K^-\pos{-b-c^-}.
+\end{equation}
+In particular, $a^*(b)=0$ for $b\in[-c^-,c^+]$; outside this \emph{no-arbitrage band}, arbitrage flow is linear in the excess premium with slope equal to capacity. In the symmetric case, $a^*(b)=K\,\sgn(b)\pos{|b|-c}$.
+\end{proposition}
+
+The policy is the soft-thresholding operator familiar from statistics. Its two parameters play distinct economic roles. The friction $c$ determines \emph{whether} arbitrage is active; capacity $K$ determines \emph{how strongly} it responds once active. Figure~\ref{fig:policy}(a) plots the policy.
+
+\begin{remark}[Static versus dynamic arbitrage]
+Proposition~\ref{prop:policy} treats arbitrage as a flow decision. In a fully dynamic model with fixed costs, the option value of waiting widens the band beyond the static cost, as in \citet{dumas1992dynamic}. The structure of the solution (inaction inside a band, active trading outside it) is preserved. The band $c^\pm$ estimated in Section~\ref{sec:empirics} should therefore be read as an \emph{effective} threshold that includes any such option value. More generally, for any convex cost $C(a)$ with $C'(0^+)=c^+$ and $C'(0^-)=-c^-$, the optimal policy is $a^*(b)=(C')^{-1}(b)$ outside $[-c^-,c^+]$ and zero inside, so all qualitative results below survive. Only the closed forms rely on the quadratic specification.
+\end{remark}
+
+\subsection{Premium dynamics}
+
+Combining non-arbitrage order flow, optimal arbitrage and noise, the premium satisfies
+\begin{equation}\label{eq:sde}
+db_t = \Big(\beta q_t - \lambda\big[K^+\pos{b_t-c^+} - K^-\pos{-b_t-c^-}\big]\Big)dt + \sigma\,dW_t .
+\end{equation}
+We write $\kappa^\pm\equiv\lambda K^\pm$ for the capacity-scaled reversion speeds and
+\[
+\mu(b) \equiv -\kappa^+\pos{b-c^+} + \kappa^-\pos{-b-c^-}
+\]
+for the arbitrage component of the drift. Equation~\eqref{eq:sde} is a threshold diffusion. Its drift is identically zero on the band, linear outside it, and kinked at $-c^-$ and $c^+$. Since $\mu$ is Lipschitz, \eqref{eq:sde} has a unique strong solution for any adapted, locally integrable order-flow process $q$.
+
+%=====================================================================
+\section{Implications}\label{sec:implications}
+%=====================================================================
+
+\subsection{Inaction and state-dependent reversion}
+
+\begin{proposition}[State-dependent reversion]\label{prop:reversion}
+Let $q\equiv 0$.
+\begin{enumerate}[label=(\alph*)]
+\item \emph{Inaction.} For $b_0\in(-c^-,c^+)$, let $\tau$ be the first exit time from the band. The stopped premium $b_{t\wedge\tau}$ is a martingale, and
+\[
+\E[\tau\mid b_0] = \frac{(c^+-b_0)(b_0+c^-)}{\sigma^2}.
+\]
+\item \emph{Exponential correction outside the band.} If $\sigma=0$ and $b_0>c^+$, then $b_t = c^+ + (b_0-c^+)e^{-\kappa^+ t}$. The excess premium has half-life
+\[
+t_{1/2}^+ = \frac{\ln 2}{\lambda K^+},
+\]
+and symmetrically $t_{1/2}^-=\ln 2/(\lambda K^-)$ for $b_0<-c^-$.
+\item \emph{Large dislocations revert faster.} The proportional reversion speed $\rho(b)\equiv-\mu(b)/b$ equals zero on the band and $\kappa^+(1-c^+/b)$ for $b>c^+$ (symmetrically for $b<-c^-$). It is non-decreasing in $|b|$ and converges to $\kappa^\pm$ as $|b|\to\infty$.
+\end{enumerate}
+\end{proposition}
+
+Proposition~\ref{prop:reversion} contains the first set of testable predictions. Small premia do not mean-revert; they wander until they hit the edge of the band, with an expected waiting time that rises with the square of the band width. Large premia revert, and do so proportionally faster the larger they are. A linear error-correction model imposes a constant $\rho$. Figure~\ref{fig:policy}(b) shows that any constant necessarily overstates reversion for small dislocations and understates it for large ones. The half-life formula gives capacity a direct, observable counterpart: halving capacity doubles the half-life of a dislocation.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig1_policy.pdf}
+\caption{\textbf{Optimal arbitrage and state-dependent reversion.} Panel (a) plots the optimal arbitrage flow $a^*(b)$ of Proposition~\ref{prop:policy} for two levels of capacity with $c^\pm=30$ bp; the shaded region is the no-arbitrage band. Panel (b) plots the proportional reversion speed $|\mu(b)|/|b|$ of Proposition~\ref{prop:reversion}(c), with $\lambda=1$; dotted lines mark the asymptotes $\kappa=\lambda K$. The flat grey line is a constant-speed linear error-correction model.}
+\label{fig:policy}
+\end{figure}
+
+\subsection{Order flow, price impact and volume}
+
+\begin{proposition}[Long-run price impact]\label{prop:impact}
+Let $\sigma=0$ and $q_t\equiv q$ constant.
+\begin{enumerate}[label=(\alph*)]
+\item If $q>0$, then from any initial condition $b_t\to b^*$, where
+\[
+b^* = c^+ + \frac{\beta q}{\lambda K^+}.
+\]
+If $q<0$, $b_t\to -c^- + \beta q/(\lambda K^-)$. If $q=0$, $b_t$ converges to the closest point of the band.
+\item The long-run price impact of order flow is
+\[
+\frac{\partial b^*}{\partial q} = \frac{\beta}{\lambda K^\pm},
+\]
+which is decreasing in capacity.
+\item In the steady state, arbitrage flow equals $a^* = \beta q/\lambda$, which does not depend on $(c^\pm,K^\pm)$. Total local volume, $|q|+|a^*|$, is therefore independent of arbitrage capacity, while the premium is decreasing in it.
+\end{enumerate}
+\end{proposition}
+
+Part (c) is the paper's central observational-equivalence result. In steady state arbitrageurs must absorb the full non-arbitrage flow, scaled by relative impact, whatever their capacity. Capacity determines only the premium at which they are willing to do so. Volume reveals demand; the premium reveals capacity.
+
+\begin{corollary}[Volume, premia and demand across markets]\label{cor:equivalence}
+Consider two local markets $i\in\{A,B\}$ with parameters $(\beta_i,\lambda_i,c_i,K_i)$ and persistent order flow $q_i>0$. Then
+\[
+b^*_A - c_A = b^*_B - c_B
+\quad\Longleftrightarrow\quad
+\frac{\beta_A q_A}{\lambda_A K_A} = \frac{\beta_B q_B}{\lambda_B K_B}.
+\]
+In particular, equal excess premia are consistent with arbitrarily different demand, provided capacity differs in proportion. Conversely, equal demand and impact ($\beta_Aq_A=\beta_Bq_B$, $\lambda_A=\lambda_B$) produce excess premia in inverse proportion to capacity.
+\end{corollary}
+
+Corollary~\ref{cor:equivalence} explains why comparisons of premia across countries, or across episodes within a country, cannot by themselves be read as comparisons of demand. Separating demand from capacity requires the joint dynamics of the premium and order flow, which is exactly what the estimator of Section~\ref{sec:empirics} uses.
+
+\subsection{The stationary distribution of the premium}
+
+When order flow has mean zero and is short-lived relative to arbitrage, its effect is absorbed into the diffusion term. The premium then has an explicit stationary law.
+
+\begin{proposition}[Stationary distribution]\label{prop:stationary}
+Let $q\equiv0$. The premium process~\eqref{eq:sde} is positive recurrent with unique stationary density
+\begin{equation}\label{eq:density}
+\pi(b) = \frac{1}{Z}
+\begin{cases}
+\exp\!\Big[-\dfrac{\lambda K^+}{\sigma^2}(b-c^+)^2\Big], & b>c^+,\\[8pt]
+1, & -c^-\le b\le c^+,\\[4pt]
+\exp\!\Big[-\dfrac{\lambda K^-}{\sigma^2}(b+c^-)^2\Big], & b<-c^-,
+\end{cases}
+\end{equation}
+with normalizing constant
+\[
+Z = c^++c^- + s^+ + s^-,\qquad s^\pm \equiv \frac12\sqrt{\frac{\pi\sigma^2}{\lambda K^\pm}} .
+\]
+Consequently:
+\begin{enumerate}[label=(\alph*)]
+\item The stationary probability that the premium lies inside the band is $(c^++c^-)/Z$.
+\item The stationary mean premium is
+\[
+\E_\pi[b] = \frac{1}{Z}\left[\frac{(c^+)^2-(c^-)^2}{2} + c^+s^+ - c^-s^- + \frac{\sigma^2}{2\lambda K^+} - \frac{\sigma^2}{2\lambda K^-}\right],
+\]
+which is non-zero whenever frictions or capacities are asymmetric, even though order flow has mean zero.
+\end{enumerate}
+\end{proposition}
+
+The density in~\eqref{eq:density} has a distinctive shape: a flat plateau whose width is the band, joined continuously to half-Gaussian tails whose precision $\lambda K^\pm/\sigma^2$ measures capacity relative to noise. Figure~\ref{fig:density} compares it with a long simulated path. Part (b) cautions against reading a persistent average premium as excess demand. If it is harder to move dollars out of the country than in ($c^+>c^-$ or $K^+<K^-$), the premium is positive on average even when order flow is balanced.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{figures/fig2_density.pdf}
+\caption{\textbf{Stationary distribution of the premium.} Asymmetric design with $c^+=25$, $c^-=45$ bp, $\lambda K^+=0.08$, $\lambda K^-=0.03$ per minute and $\sigma=4$ bp$/\sqrt{\text{min}}$. The histogram is a simulated path of $2\times10^6$ minutes; the solid line is the closed form~\eqref{eq:density}. Dashed lines mark the band. The theoretical probability of being inside the band is $0.680$, against $0.688$ in the simulation (the small gap reflects Euler discretization at the boundary).}
+\label{fig:density}
+\end{figure}
+
+\subsection{Capacity depletion and the arbitrage throughput limit}
+
+Capacity is not a fixed endowment. Arbitrage ties up capital in transit, exhausts withdrawal limits and banking lines, and accumulates inventory that must be unwound. We now let capacity respond to arbitrage activity. Focus on the region $b>c^+$ and drop direction superscripts:
+\begin{equation}\label{eq:Kdyn}
+dK_t = \big[\xi(\bar K - K_t) - \chi\,|a^*_t|\big]dt, \qquad a^*_t = K_t\pos{b_t-c},
+\end{equation}
+where $\bar K$ is normal-times capacity, $\xi$ is the rate at which capacity replenishes (capital is redeployed, limits reset), and $\chi$ is the rate at which arbitrage activity consumes it.
+
+\begin{proposition}[Throughput limit and convex impact]\label{prop:depletion}
+Let $\sigma=0$, $q_t\equiv q>0$, and let $(b_t,K_t)$ follow~\eqref{eq:sde} and~\eqref{eq:Kdyn} with $K_0>0$. Define the \emph{arbitrage throughput limit} $\bar a\equiv\xi\bar K/\chi$ and the critical order flow
+\[
+q_{crit} \equiv \frac{\lambda\bar a}{\beta} = \frac{\xi\lambda\bar K}{\chi\beta}.
+\]
+\begin{enumerate}[label=(\alph*)]
+\item If $q<q_{crit}$, there is a unique steady state,
+\[
+K^* = \bar K\Big(1-\frac{q}{q_{crit}}\Big),\qquad
+b^* = c + \frac{\beta q}{\lambda\bar K\,(1-q/q_{crit})},
+\]
+and it is locally asymptotically stable. The long-run price impact
+\[
+\frac{\partial b^*}{\partial q} = \frac{\beta}{\lambda\bar K\,(1-q/q_{crit})^2}
+\]
+is increasing and convex in $q$ and diverges as $q\uparrow q_{crit}$.
+\item If $q>q_{crit}$, no steady state exists, and for any initial condition
+\[
+\liminf_{t\to\infty}\frac{b_t}{t} \;\ge\; \beta\,(q-q_{crit}) > 0 .
+\]
+\end{enumerate}
+\end{proposition}
+
+Proposition~\ref{prop:depletion} identifies the binding constraint in stressed markets. The constraint is not the stock of capacity $K$ but the flow $\bar a=\xi\bar K/\chi$, the rate at which the arbitrage sector can sustainably process trades. Demand above this throughput limit cannot be absorbed at any premium, and the premium drifts away. This is the mechanism behind sudden de-pegs of local stablecoin prices during currency crises and capital-control tightening. Demand surges, arbitrage turns on, capacity is consumed, and future corrections slow down, which lets the premium keep widening. Figure~\ref{fig:capacity}(a) shows the convex steady-state impact; panel (b) shows the response to a temporary burst of order flow. In the illustrative calibration, depletion doubles the peak premium and raises the half-life of the subsequent correction from 14 minutes to more than six hours.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig3_capacity.pdf}
+\caption{\textbf{Capacity depletion.} Parameters: $\beta=\lambda=1$, $\bar K=0.05$, $\xi=0.01$, $\chi=0.002$, $c=30$ bp, so $q_{crit}=0.25$. Panel (a): steady-state premium against persistent order flow, with fixed capacity (grey) and endogenous capacity (Proposition~\ref{prop:depletion}). Panel (b): response to order flow $q=4$ for 60 minutes. With fixed capacity the post-burst half-life of the excess premium is $13.9$ minutes, equal to $\ln2/(\lambda\bar K)$; with endogenous capacity it is $370$ minutes.}
+\label{fig:capacity}
+\end{figure}
+
+\subsection{Price discovery: who discovers the dollar?}
+
+We now ask how information that arrives first in the local market is transmitted to the global price. Let the local price jump by $\delta>0$ at $t=0$ because informed local order flow reveals news about the common dollar value (for example, news about the issuer, or about the dollar's local purchasing power that global participants learn only through prices). Before the shock $b_{0^-}=0$. Arbitrage moves the local price by $-\lambda_L a\,dt$ and the global price by $+\lambda_G a\,dt$. Define the global leg's share of arbitrage impact $\omega\equiv\lambda_G/(\lambda_L+\lambda_G)$.
+
+\begin{proposition}[Local information transmission]\label{prop:discovery}
+Let $\sigma=0$ and $q_t\equiv0$ for $t>0$. The global price at horizon $h$ satisfies
+\[
+S_h(\delta)\;\equiv\;\frac{\log P^G_h-\log P^G_0}{\delta} = \omega\Big(1-\frac{c^+}{\delta}\Big)_+\big(1-e^{-\lambda K^+ h}\big).
+\]
+Consequently:
+\begin{enumerate}[label=(\alph*)]
+\item local information shocks smaller than the band ($\delta\le c^+$) are never transmitted to the global price;
+\item the long-run share $S_\infty(\delta)=\omega(1-c^+/\delta)_+$ is decreasing in the friction and independent of capacity;
+\item at any finite horizon, $S_h(\delta)$ is increasing in capacity, and the half-life of transmission is $\ln2/(\lambda K^+)$.
+\end{enumerate}
+\end{proposition}
+
+Frictions determine how much local information ever reaches the global price; capacity determines how fast it gets there (Figure~\ref{fig:discovery}). A market with heavy trading but a wide band, or one whose arbitrage capacity is impaired, can be very active and still contribute almost nothing to the price of the dollar elsewhere. This is consistent with the finding of \citet{makarov2020trading} that more segmented, higher-premium venues contribute less to global price discovery, and it explains that finding through $(c,K)$. A further implication concerns measurement. Linear information-share measures \citep{hasbrouck1995one, gonzalo1995estimation} average $S_h(\delta)$ over the distribution of shock sizes. They therefore depend on the volatility regime and can change sharply with no change in market structure.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{figures/fig4_discovery.pdf}
+\caption{\textbf{Transmission of local information to the global price.} Fraction of a local information shock of size $\delta$ incorporated into the global price within $h=30$ minutes (Proposition~\ref{prop:discovery}), with $\omega=0.5$, for different frictions $c$ and capacities $\lambda K$.}
+\label{fig:discovery}
+\end{figure}
+
+%=====================================================================
+\section{Networks of venues}\label{sec:network}
+%=====================================================================
+
+Stablecoins trade on many venues at once: several local exchanges, peer-to-peer platforms, and global order books. We now let $N\ge3$ venues with log prices $p_t=(p_{1t},\dots,p_{Nt})'$ be connected by pairwise threshold arbitrage. Let $w_{ij}=w_{ji}\ge0$ be the capacity-scaled arbitrage intensity on link $\{i,j\}$, and $c_{ij}=c_{ji}>0$ its friction. Let $\phi_c(x)\equiv\sgn(x)\pos{|x|-c}$ denote the soft-threshold function. Prices follow
+\begin{equation}\label{eq:network}
+dp_{it} = -\sum_{j\ne i} w_{ij}\,\phi_{c_{ij}}(p_{it}-p_{jt})\,dt + (\Sigma\,dW_t)_i ,
+\end{equation}
+where $\Sigma$ is an $N\times N$ volatility matrix that also absorbs mean-zero order-flow shocks. Let $L_w$ be the weighted graph Laplacian of $(w_{ij})$, and let $\lambda_2(L_w)$ be its second-smallest eigenvalue, the \emph{algebraic connectivity} of the arbitrage network \citep{fiedler1973algebraic}. The network is connected if and only if $\lambda_2(L_w)>0$. Cross-venue disagreement is measured by $z_t=Pp_t$ with $P=I-\frac1N\mathbf{1}\mathbf{1}'$ and $V(z)=\frac12\|z\|^2$.
+
+\begin{proposition}[Dispersion and connectivity]\label{prop:network}
+If the arbitrage network is connected, then
+\[
+\limsup_{t\to\infty}\E[V(z_t)] \;\le\; \frac{\tfrac12\sum_{i<j}w_{ij}c_{ij}^2 + \tfrac12\operatorname{tr}(P\Sigma\Sigma'P)}{\lambda_2(L_w)} .
+\]
+If the network is disconnected, $\E[V(z_t)]$ grows linearly in $t$ whenever the noise is non-degenerate across components.
+\end{proposition}
+
+The bound has two terms in the numerator. The first is the dispersion that frictions tolerate inside the bands; the second is the dispersion generated by noise. The denominator is the network's ability to pull prices together. Long-run dispersion therefore depends on capacity only through $\lambda_2$, which depends on the \emph{topology} of the network as well as on the level of capacity. Two corollaries follow.
+
+\begin{corollary}[Centralized arbitrage: efficient and fragile]\label{cor:hub}
+Suppose links are costly, so that the arbitrage network is a spanning tree, and each link has the same intensity $w$.
+\begin{enumerate}[label=(\alph*)]
+\item The star network, in which a single hub venue is linked to every other venue, attains $\lambda_2(L_w)=w$. This is the maximum over all spanning trees, so the hub structure minimizes the dispersion bound among minimal networks.
+\item If the hub fails, all links vanish, the remaining $N-1$ venues are mutually disconnected, and dispersion grows without bound. Removing any single non-hub venue leaves $\lambda_2=w$ unchanged.
+\item By contrast, in the complete network with intensity $w$ on every link, $\lambda_2=Nw$, and removing any venue leaves $\lambda_2=(N-1)w$.
+\end{enumerate}
+\end{corollary}
+
+Corollary~\ref{cor:hub} formalizes a trade-off. When maintaining an arbitrage link is costly (accounts, banking relationships and transfer rails must be set up for each pair of venues), arbitrage naturally concentrates in a hub. In crypto the hub is typically the largest global exchange or a dominant market maker \citep{hu2023competition}. The hub maximizes integration in normal times, but its failure disconnects the market. This mirrors, across secondary-market venues, the primary-market trade-off documented by \citet{ma2025stablecoin}, and it predicts that the dispersion of local stablecoin prices should spike when a hub venue suspends withdrawals or a hub arbitrageur exits, by much more than when a peripheral venue does.
+
+%=====================================================================
+\section{Empirical implementation}\label{sec:empirics}
+%=====================================================================
+
+\subsection{Measurement}
+
+\paragraph{Premium.} For each local market (e.g., USDT/TRY, USDT/NGN), we construct the premium at a one-minute frequency,
+\[
+b_t = \log M^{L}_t - \log X_t,
+\]
+where $M^L_t$ is the local mid-quote of USDT in local currency and $X_t$ is a contemporaneous benchmark price of one U.S.\ dollar in local currency. Two benchmarks are informative: an interbank or official FX rate, and a crypto-implied rate (the local BTC price divided by the global BTC/USDT price). The difference between the two premia separates FX-access frictions from crypto-venue frictions.
+
+\paragraph{Order flow.} Signed order-flow imbalance is constructed from trade-level data as buyer-initiated minus seller-initiated volume in USDT. Where only order-book snapshots are available, we use the order-flow imbalance of \citet{cont2014price}. We standardize $\mathit{OFI}_t$ within market to make $\beta$ comparable across markets.
+
+\paragraph{Capacity states.} The model predicts that $c^\pm$ and $K^\pm$ vary with observable states. We consider (i) banking hours versus nights and weekends, when fiat rails are closed and $K$ falls mechanically; (ii) exchange withdrawal suspensions and on-ramp outages; (iii) regulatory announcements and enforcement actions targeting crypto on- and off-ramps; (iv) volatility of the global stablecoin market; and (v) the cumulative recent arbitrage flow, which proxies the depletion term in~\eqref{eq:Kdyn}.
+
+\subsection{Estimator}
+
+An Euler discretization of~\eqref{eq:sde} at interval $\Delta$ gives
+\begin{equation}\label{eq:tar}
+\Delta b_{t+1} = \alpha + \beta\,\mathit{OFI}_t - \kappa^+\pos{b_t-c^+} + \kappa^-\pos{-b_t-c^-} + \varepsilon_{t+1},
+\end{equation}
+with $\kappa^\pm=\lambda K^\pm\Delta$. For fixed $(c^+,c^-)$, \eqref{eq:tar} is linear in $(\alpha,\beta,\kappa^+,\kappa^-)$. We estimate by profiled least squares:
+\[
+(\hat c^+,\hat c^-) = \arg\min_{(c^+,c^-)\in\mathcal G}\ \mathrm{SSR}(c^+,c^-),
+\]
+over a grid $\mathcal G$, and then obtain the slopes by OLS at $(\hat c^+,\hat c^-)$. Thresholds in such models are super-consistent \citep{hansen2000sample}, so inference on the slopes can treat them as known. Confidence sets for the thresholds are obtained by inverting the likelihood-ratio statistic as in \citet{hansen2000sample}. The null of linear error correction (no band) is tested with the sup-LR statistic and the bootstrap of \citet{hansen1996inference} and \citet{hansen2002testing}. Capacity states $Z_t$ enter through interactions, $\kappa^\pm_t=\kappa^\pm_0+\kappa^{\pm\prime}_1 Z_t$ and $c^\pm_t=c^\pm_0+c^{\pm\prime}_1Z_t$; the latter are estimated by splitting the sample on discrete states.
+
+\paragraph{Structural objects.} The estimator delivers, market by market and state by state:
+\begin{itemize}[nosep]
+\item the band $(c^+,c^-)$, and its asymmetry, which measures the difference between inbound and outbound frictions;
+\item capacity-scaled speeds $\kappa^\pm$ and half-lives $\ln2/\kappa^\pm$;
+\item the primitive impact $\beta$;
+\item the long-run impact multiplier $\beta/\kappa^\pm$ (Proposition~\ref{prop:impact}), which converts a unit of persistent order flow into a steady-state premium.
+\end{itemize}
+Capacity $K$ and arbitrage impact $\lambda$ are identified only through their product. Cross-market comparisons of $\kappa$ are comparisons of capacity under the maintained assumption that $\lambda$ is comparable. This can be checked using the depth of the two legs.
+
+\subsection{Identification of order-flow impact}
+
+Measured order flow contains the arbitrageurs' own trades, which are mechanically correlated with the premium: when $b_t>c^+$, arbitrageurs sell locally, so measured $\mathit{OFI}_t$ is pushed down exactly when the premium is about to fall. OLS of~\eqref{eq:tar} on total order flow therefore biases $\beta$ towards zero. The model suggests a natural remedy. By Proposition~\ref{prop:policy}, arbitrage flow is zero inside the band, so in-band order flow is pure non-arbitrage flow. Estimating $\beta$ on the subsample $b_t\in[\hat c^-,\hat c^+]$ (or instrumenting total order flow with in-band order flow) recovers the primitive impact. Complementary strategies use trade-size or account-type filters to isolate retail flow, and the timing restriction that lagged order flow is predetermined with respect to $\varepsilon_{t+1}$.
+
+\subsection{Tests}
+
+The model yields the following tests, in order of increasing structure.
+\begin{enumerate}[label=\textbf{T\arabic*.}]
+\item \emph{Inaction region.} The reversion coefficient is zero for $|b_t|$ below the estimated band and positive above it; the sup-LR test rejects linear error correction.
+\item \emph{Size-dependent speed.} In regressions of $-\Delta b_{t+1}\,\sgn(b_t)$ on $|b_t|$ within bins of $|b_t|$, the slope is non-decreasing across bins (Proposition~\ref{prop:reversion}(c)).
+\item \emph{Asymmetry.} $c^+\neq c^-$ and $\kappa^+\neq\kappa^-$, with the direction predicted by the asymmetry of capital controls.
+\item \emph{Capacity states.} Bands widen and $\kappa$ falls outside banking hours, during withdrawal suspensions and after regulatory tightening; the long-run impact multiplier $\beta/\kappa$ rises correspondingly.
+\item \emph{Depletion.} Conditional on $b_t$, $\kappa$ is lower after periods of heavy cumulative arbitrage flow, and long-run impact is convex in persistent order flow (Proposition~\ref{prop:depletion}).
+\item \emph{Price discovery.} The response of the global price to a local premium innovation is zero for innovations inside the band and increasing in the excess outside it, and the transmission speed is increasing in estimated $\kappa$ (Proposition~\ref{prop:discovery}).
+\end{enumerate}
+
+%=====================================================================
+\section{Simulation evidence}\label{sec:mc}
+%=====================================================================
+
+This section shows that the estimator recovers the structural parameters at realistic sample sizes and that linear models are misleading when the data are generated by threshold arbitrage. Units are basis points and minutes. The baseline design has $c^\pm=30$ bp, $\kappa^\pm=0.05$ per minute (half-life 14 minutes), $\beta=1$, $\sigma=4$ bp$/\sqrt{\text{min}}$, and order flow following a standardized AR(1) with autocorrelation $0.9$. The asymmetric design has $c^+=20$, $c^-=50$, $\kappa^+=0.08$ and $\kappa^-=0.02$. The low-capacity design sets $\kappa^\pm=0.015$. Each replication has $T=20{,}000$ observations, about two weeks of minute data, and there are $200$ replications per design. Thresholds are profiled over a grid with $2.5$ bp spacing.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Monte Carlo: recovery of structural parameters}}
+\label{tab:mc}
+\small
+\input{tables/tab1_montecarlo.tex}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\vspace{4pt}
+\emph{Notes:} $200$ replications of $T=20{,}000$ one-minute observations per design. ``Median estimate'' and ``RMSE'' refer to the profiled least-squares estimator of~\eqref{eq:tar}. ``Linear ECM'' reports the median reversion coefficient (first four columns) and order-flow coefficient (last column) from $\Delta b_{t+1}=\alpha+\beta\,\mathit{OFI}_t-\kappa b_t+\varepsilon_{t+1}$.
+\end{minipage}
+\end{table}
+
+Table~\ref{tab:mc} reports the results. The thresholds are estimated with an RMSE of 2--3 bp in the baseline. Capacity-scaled speeds and order-flow impact are essentially unbiased. Asymmetries in both the band and capacity are recovered. In the low-capacity design the premium spends more time far outside the band, so its edges are visited less sharply and the thresholds are estimated less precisely, though still without bias. The implied long-run impact multipliers $\beta/\kappa^+$ have median estimates of $19.8$, $12.3$ and $63.9$ against true values of $20.0$, $12.5$ and $66.7$. The capacity differences that Corollary~\ref{cor:equivalence} says are hidden in raw premia are therefore recoverable from the joint dynamics of premia and order flow.
+
+The linear error-correction model performs poorly. Its reversion coefficient is $0.015$ in the baseline, less than a third of the true speed outside the band, and it implies a half-life of 47 minutes instead of 14. In the asymmetric design it averages two very different speeds into a single number. Reading the linear coefficient as a measure of arbitrage capacity, and $\beta/\hat\kappa$ as long-run impact, would overstate the long-run price impact of order flow by a factor of about two (low-capacity design) to more than three (baseline).
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Reversion speed by size of dislocation (baseline design)}}
+\label{tab:bins}
+\small
+\input{tables/tab2_bins.tex}
+\begin{minipage}{0.92\textwidth}
+\footnotesize
+\vspace{4pt}
+\emph{Notes:} Simulated path of $5\times10^5$ minutes. Within each bin of $|b_t|$, the table reports the slope from regressing $-\Delta b_{t+1}\,\sgn(b_t)$ on $|b_t|$ and $\mathit{OFI}_t\,\sgn(b_t)$ without an intercept, and the implied half-life $\ln2/\text{slope}$ (reported as $\infty$ when the slope is not positive). The band is $[-30,30]$ bp.
+\end{minipage}
+\end{table}
+
+Table~\ref{tab:bins} implements test T2 on a long simulated path. Reversion is absent inside the band: the estimated slopes are economically negligible (at most $0.003$ in absolute value, and not positive), and the implied half-lives are infinite. It switches on at the band edge and strengthens with the size of the dislocation, with the half-life falling from 68 minutes for dislocations just outside the band to 25 minutes for the largest ones. This pattern is the empirical signature of Proposition~\ref{prop:reversion}(c), and it is inconsistent with any linear model.
+
+%=====================================================================
+\section{Conclusion}\label{sec:conclusion}
+%=====================================================================
+
+The law of one price for dollar stablecoins holds only as far as arbitrage capacity allows. We have shown that two primitive frictions, a proportional cost and a finite capacity, turn the local stablecoin premium into a threshold diffusion with a closed-form stationary law. The same frictions separate what trading volume reveals (demand) from what the premium reveals (capacity). They make long-run price impact convex and bounded by an arbitrage throughput limit. They filter which local information reaches the global price. And they make centralized arbitrage networks both efficient and fragile. The estimator we propose recovers these frictions from high-frequency premium and order-flow data. Applied to local stablecoin markets in economies with capital controls, it can answer the question in the title: whether a local market helps discover the dollar's value, or only pays to access it.
+
+\newpage
+\singlespacing
+\begin{thebibliography}{99}
+\setlength{\itemsep}{2pt}
+
+\bibitem[Aldasoro et al.(2026)]{aldasoro2026stablecoin}
+Aldasoro, I., P. Beltran, and F. Grinberg (2026). Stablecoin inflows and spillovers to FX markets. IMF Working Paper 26/56.
+
+\bibitem[Balke and Fomby(1997)]{balke1997threshold}
+Balke, N.~S. and T.~B. Fomby (1997). Threshold cointegration. \emph{International Economic Review} 38(3), 627--645.
+
+\bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009market}
+Brunnermeier, M.~K. and L.~H. Pedersen (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22(6), 2201--2238.
+
+\bibitem[Cont et al.(2014)]{cont2014price}
+Cont, R., A. Kukanov, and S. Stoikov (2014). The price impact of order book events. \emph{Journal of Financial Econometrics} 12(1), 47--88.
+
+\bibitem[Du et al.(2018)]{du2018deviations}
+Du, W., A. Tepper, and A. Verdelhan (2018). Deviations from covered interest rate parity. \emph{Journal of Finance} 73(3), 915--957.
+
+\bibitem[Duffie(2010)]{duffie2010presidential}
+Duffie, D. (2010). Presidential address: Asset price dynamics with slow-moving capital. \emph{Journal of Finance} 65(4), 1237--1267.
+
+\bibitem[Dumas(1992)]{dumas1992dynamic}
+Dumas, B. (1992). Dynamic equilibrium and the real exchange rate in a spatially separated world. \emph{Review of Financial Studies} 5(2), 153--180.
+
+\bibitem[Fiedler(1973)]{fiedler1973algebraic}
+Fiedler, M. (1973). Algebraic connectivity of graphs. \emph{Czechoslovak Mathematical Journal} 23(2), 298--305.
+
+\bibitem[Gonzalo and Granger(1995)]{gonzalo1995estimation}
+Gonzalo, J. and C. Granger (1995). Estimation of common long-memory components in cointegrated systems. \emph{Journal of Business \& Economic Statistics} 13(1), 27--35.
+
+\bibitem[Griffin and Shams(2020)]{griffin2020untethered}
+Griffin, J.~M. and A. Shams (2020). Is Bitcoin really untethered? \emph{Journal of Finance} 75(4), 1913--1964.
+
+\bibitem[Gromb and Vayanos(2002)]{gromb2002equilibrium}
+Gromb, D. and D. Vayanos (2002). Equilibrium and welfare in markets with financially constrained arbitrageurs. \emph{Journal of Financial Economics} 66(2--3), 361--407.
+
+\bibitem[Hansen(1996)]{hansen1996inference}
+Hansen, B.~E. (1996). Inference when a nuisance parameter is not identified under the null hypothesis. \emph{Econometrica} 64(2), 413--430.
+
+\bibitem[Hansen(2000)]{hansen2000sample}
+Hansen, B.~E. (2000). Sample splitting and threshold estimation. \emph{Econometrica} 68(3), 575--603.
+
+\bibitem[Hansen and Seo(2002)]{hansen2002testing}
+Hansen, B.~E. and B. Seo (2002). Testing for two-regime threshold cointegration in vector error-correction models. \emph{Journal of Econometrics} 110(2), 293--318.
+
+\bibitem[Hasbrouck(1995)]{hasbrouck1995one}
+Hasbrouck, J. (1995). One security, many markets: Determining the contributions to price discovery. \emph{Journal of Finance} 50(4), 1175--1199.
+
+\bibitem[Hautsch et al.(2024)]{hautsch2024building}
+Hautsch, N., C. Scheuch, and S. Voigt (2024). Building trust takes time: Limits to arbitrage for blockchain-based assets. \emph{Review of Finance} 28(4), 1345--1381.
+
+\bibitem[Hu and Zhang(2023)]{hu2023competition}
+Hu, J. and A.~L. Zhang (2023). Competition in the cryptocurrency exchange market. Working paper, University of Chicago.
+
+\bibitem[Lehar et al.(2024)]{lehar2024fragmentation}
+Lehar, A., C.~A. Parlour, and M. Zoican (2024). Fragmentation and optimal liquidity supply on decentralized exchanges. Working paper, arXiv:2307.13772.
+
+\bibitem[Lyons and Viswanath-Natraj(2023)]{lyons2023stablecoins}
+Lyons, R.~K. and G. Viswanath-Natraj (2023). What keeps stablecoins stable? \emph{Journal of International Money and Finance} 131, 102777.
+
+\bibitem[Ma et al.(2025)]{ma2025stablecoin}
+Ma, Y., Y. Zeng, and A.~L. Zhang (2025). Stablecoin runs and the centralization of arbitrage. \emph{Review of Financial Studies}, forthcoming. NBER Working Paper 33882.
+
+\bibitem[Makarov and Schoar(2020)]{makarov2020trading}
+Makarov, I. and A. Schoar (2020). Trading and arbitrage in cryptocurrency markets. \emph{Journal of Financial Economics} 135(2), 293--319.
+
+\bibitem[Mitchell et al.(2007)]{mitchell2007slow}
+Mitchell, M., L.~H. Pedersen, and T. Pulvino (2007). Slow moving capital. \emph{American Economic Review} 97(2), 215--220.
+
+\bibitem[Obstfeld and Taylor(1997)]{obstfeld1997nonlinear}
+Obstfeld, M. and A.~M. Taylor (1997). Nonlinear aspects of goods-market arbitrage and adjustment: Heckscher's commodity points revisited. \emph{Journal of the Japanese and International Economies} 11(4), 441--479.
+
+\bibitem[Shleifer and Vishny(1997)]{shleifer1997limits}
+Shleifer, A. and R.~W. Vishny (1997). The limits of arbitrage. \emph{Journal of Finance} 52(1), 35--55.
+
+\end{thebibliography}
+
+\newpage
+\onehalfspacing
+\appendix
+\section*{Appendix: Proofs}
+\addcontentsline{toc}{section}{Appendix: Proofs}
+
+\paragraph{Proof of Proposition~\ref{prop:policy}.}
+$\Pi(\cdot;b)$ is continuous and strictly concave on $\mathbb R$: it is strictly concave on each half-line, and at $a=0$ its left derivative $b+c^-$ exceeds its right derivative $b-c^+$, so the kink is concave. Hence the maximizer is unique and is characterized by $0\in\partial\Pi(a^*;b)$. At $a=0$ the superdifferential is $[b-c^+,\,b+c^-]$, which contains $0$ if and only if $-c^-\le b\le c^+$. If $b>c^+$, the right derivative at zero is positive, so $a^*>0$ solves $b-c^+-a/K^+=0$, i.e.\ $a^*=K^+(b-c^+)$. If $b<-c^-$, the left derivative at zero is negative, so $a^*<0$ solves $b+c^--a/K^-=0$, i.e.\ $a^*=K^-(b+c^-)=-K^-(-b-c^-)$. Combining the cases gives~\eqref{eq:policy}. \qed
+
+\paragraph{Proof of Proposition~\ref{prop:reversion}.}
+(a) With $q\equiv0$ and $b_s\in(-c^-,c^+)$ for $s<\tau$, the drift vanishes, so $b_{t\wedge\tau}=b_0+\sigma W_{t\wedge\tau}$ is a stopped Brownian motion and hence a martingale. The expected exit time of $b_0+\sigma W$ from $(-c^-,c^+)$ solves $\frac{\sigma^2}{2}u''=-1$ with $u(-c^-)=u(c^+)=0$, whose solution is $u(b_0)=(c^+-b_0)(b_0+c^-)/\sigma^2$.
+(b) With $\sigma=0$ and $b>c^+$, $\dot b=-\kappa^+(b-c^+)$. The solution $b_t=c^++(b_0-c^+)e^{-\kappa^+t}$ stays above $c^+$ for all $t$, so the linear dynamics remain valid. The excess halves when $e^{-\kappa^+t}=1/2$.
+(c) For $b>c^+$, $\rho(b)=\kappa^+(b-c^+)/b=\kappa^+(1-c^+/b)$, which is increasing in $b$ and tends to $\kappa^+$. On the band $\rho=0$. The case $b<-c^-$ is symmetric. \qed
+
+\paragraph{Proof of Proposition~\ref{prop:impact}.}
+(a) Let $q>0$ and $\sigma=0$, so $\dot b=f(b)\equiv\beta q+\mu(b)$. The function $f$ is continuous and strictly positive for $b\le c^+$, strictly decreasing on $(c^+,\infty)$, and has a unique zero at $b^*=c^++\beta q/\kappa^+$. Since $f>0$ below $b^*$ and $f<0$ above it, every trajectory converges monotonically to $b^*$. The case $q<0$ is symmetric. If $q=0$, $f$ vanishes on the band and the argument of Proposition~\ref{prop:reversion}(b) applies outside it.
+(b) Differentiate $b^*$.
+(c) At the steady state $\dot b=0$, so $\beta q=\lambda a^*$. \qed
+
+\paragraph{Proof of Corollary~\ref{cor:equivalence}.}
+Immediate from Proposition~\ref{prop:impact}(a) applied to each market. \qed
+
+\paragraph{Proof of Proposition~\ref{prop:stationary}.}
+For a one-dimensional diffusion $db=\mu(b)dt+\sigma dW$ with Lipschitz drift, the speed measure has density $m(b)=\frac{2}{\sigma^2}\exp\!\big(\frac{2}{\sigma^2}\int_0^b\mu(x)dx\big)$. The process is positive recurrent, with stationary density proportional to $m$, whenever $m$ is integrable and the scale function diverges at $\pm\infty$. Here $\int_0^b\mu=0$ on the band, $-\frac{\kappa^+}{2}(b-c^+)^2$ for $b>c^+$, and $-\frac{\kappa^-}{2}(b+c^-)^2$ for $b<-c^-$. This gives~\eqref{eq:density}, which is integrable. The scale density $1/m$ grows like a Gaussian reciprocal, so the scale function diverges at both ends. For the constant, use $\int_0^\infty e^{-\theta x^2}dx=\frac12\sqrt{\pi/\theta}$ with $\theta=\kappa^\pm/\sigma^2$. Part (a) follows by integrating the plateau. For part (b), $\int_{-c^-}^{c^+}b\,db=\frac{(c^+)^2-(c^-)^2}{2}$ and $\int_{c^+}^\infty b\,e^{-\theta(b-c^+)^2}db=c^+\cdot\frac12\sqrt{\pi/\theta}+\frac{1}{2\theta}$, with $\frac{1}{2\theta}=\frac{\sigma^2}{2\kappa^+}$; the lower tail is symmetric with the opposite sign. \qed
+
+\paragraph{Proof of Proposition~\ref{prop:depletion}.}
+Write $x_t=b_t-c$ and $a_t=K_t(x_t)_+\ge0$. The system is
+\[
+\dot x=\beta q-\lambda a,\qquad \dot K=\xi(\bar K-K)-\chi a .
+\]
+The set $\{K>0\}$ is forward invariant: at $K=0$, $a=0$ and $\dot K=\xi\bar K>0$.
+
+(a) A steady state requires $\lambda a=\beta q>0$, so $x>0$ and $a=K x=\beta q/\lambda$. Then $\dot K=0$ gives $K^*=\bar K-\chi\beta q/(\xi\lambda)=\bar K(1-q/q_{crit})$, which is positive if and only if $q<q_{crit}$, and $x^*=\beta q/(\lambda K^*)$. In the region $x>0$ the Jacobian is
+\[
+J=\begin{pmatrix}-\lambda K & -\lambda x\\ -\chi K & -\xi-\chi x\end{pmatrix},
+\qquad \operatorname{tr}J<0,\qquad \det J=\lambda K(\xi+\chi x)-\lambda\chi Kx=\lambda\xi K>0,
+\]
+so both eigenvalues have negative real parts at $(x^*,K^*)$, which establishes local asymptotic stability. Differentiating $b^*=c+\beta q/(\lambda\bar K(1-q/q_{crit}))$ gives $\partial b^*/\partial q=\beta/(\lambda\bar K)\cdot\big[(1-q/q_{crit})+q/q_{crit}\big]/(1-q/q_{crit})^2=\beta/(\lambda\bar K(1-q/q_{crit})^2)$, which is increasing and convex on $[0,q_{crit})$ and diverges as $q\uparrow q_{crit}$.
+
+(b) Integrating the capacity equation over $[0,T]$ and using $K_T>0$ and $K_t\ge0$,
+\[
+\chi\int_0^Ta_t\,dt = \xi\bar KT-\xi\int_0^TK_tdt-(K_T-K_0)\le \xi\bar KT+K_0 .
+\]
+Hence $\int_0^Ta_tdt\le\bar aT+K_0/\chi$. Integrating the premium equation,
+\[
+x_T=x_0+\beta qT-\lambda\int_0^Ta_tdt\ \ge\ x_0-\frac{\lambda K_0}{\chi}+(\beta q-\lambda\bar a)T .
+\]
+Dividing by $T$ and letting $T\to\infty$ gives $\liminf x_T/T\ge\beta q-\lambda\bar a=\beta(q-q_{crit})$. If $q>q_{crit}$ this is positive, so no steady state can exist. \qed
+
+\paragraph{Proof of Proposition~\ref{prop:discovery}.}
+After the shock, $b_0=\delta$ and $\dot b=-\lambda a^*(b)$, with $\dot p^G=\lambda_Ga^*(b)$. If $\delta\le c^+$, $a^*=0$ for all $t$ and $p^G$ does not move. If $\delta>c^+$, Proposition~\ref{prop:reversion}(b) gives $b_t-c^+=(\delta-c^+)e^{-\lambda K^+t}$. Since $\dot p^G=\lambda_Ga^*=-\frac{\lambda_G}{\lambda}\dot b$,
+\[
+p^G_h-p^G_0=\omega\,(b_0-b_h)=\omega(\delta-c^+)\big(1-e^{-\lambda K^+h}\big).
+\]
+Dividing by $\delta$ gives $S_h(\delta)$, and parts (a)--(c) follow by inspection. \qed
+
+\paragraph{Proof of Proposition~\ref{prop:network}.}
+Since $P$ is a projection and $P\mathbf 1=0$, $z=Pp$ satisfies $dz=-P F(p)\,dt+P\Sigma\,dW$, where $F_i(p)=\sum_jw_{ij}\phi_{c_{ij}}(p_i-p_j)$. By Itô's lemma, $V(z)=\frac12\|z\|^2$ has generator
+\[
+\mathcal LV = -z'F(p)+\tfrac12\operatorname{tr}(P\Sigma\Sigma'P),
+\]
+where we used $z'P=z'$. By symmetry of $w$ and oddness of $\phi$,
+\[
+z'F(p)=\sum_i\sum_jw_{ij}z_i\phi_{c_{ij}}(p_i-p_j)=\sum_{i<j}w_{ij}(z_i-z_j)\phi_{c_{ij}}(p_i-p_j)=\sum_{i<j}w_{ij}(p_i-p_j)\phi_{c_{ij}}(p_i-p_j),
+\]
+since $z_i-z_j=p_i-p_j$. For any $x$ and $c>0$, $x\phi_c(x)\ge\frac12x^2-\frac12c^2$. This holds trivially for $|x|\le c$; for $|x|>c$, $x\phi_c(x)=x^2-c|x|\ge x^2-\frac12(x^2+c^2)$. Therefore
+\[
+z'F(p)\ge\tfrac12\sum_{i<j}w_{ij}(p_i-p_j)^2-\tfrac12\sum_{i<j}w_{ij}c_{ij}^2=\tfrac12z'L_wz-\tfrac12\sum_{i<j}w_{ij}c_{ij}^2 .
+\]
+Since $z\perp\mathbf 1$, the Courant--Fischer theorem gives $z'L_wz\ge\lambda_2(L_w)\|z\|^2=2\lambda_2(L_w)V$. Thus
+\[
+\mathcal LV\le-\lambda_2(L_w)V+C,\qquad C\equiv\tfrac12\sum_{i<j}w_{ij}c_{ij}^2+\tfrac12\operatorname{tr}(P\Sigma\Sigma'P).
+\]
+By Dynkin's formula with a standard localization argument (the drift is Lipschitz, so all moments are finite), $\frac{d}{dt}\E V(z_t)\le-\lambda_2\E V(z_t)+C$. Gr\"onwall's inequality then gives $\E V(z_t)\le e^{-\lambda_2t}\E V(z_0)+C/\lambda_2$, which yields the bound. If the network is disconnected, take two components $A$ and $B$. The difference between their average prices has no drift, because arbitrage within each component preserves its average. If the noise is non-degenerate across components, that difference is a Brownian motion with positive variance rate, so its second moment, and hence $\E V$, grows linearly. \qed
+
+\paragraph{Proof of Corollary~\ref{cor:hub}.}
+(a) The Laplacian of the star $K_{1,N-1}$ with weight $w$ has eigenvalues $0$, $w$ (multiplicity $N-2$) and $Nw$, so $\lambda_2=w$. For any non-complete graph, \citet{fiedler1973algebraic} shows that algebraic connectivity is bounded above by vertex connectivity. Every tree on $N\ge3$ vertices has vertex connectivity one, so $\lambda_2\le w$ for every spanning tree with weight $w$, and the star attains the bound.
+(b) Deleting the hub removes all edges. Deleting a leaf leaves a star on $N-1$ vertices, whose algebraic connectivity is again $w$ for $N-1\ge3$ (for $N-1=2$ it is $2w$). Unbounded dispersion follows from the last part of Proposition~\ref{prop:network}.
+(c) The complete graph $K_N$ with weight $w$ has Laplacian $w(NI-\mathbf 1\mathbf 1')$, with eigenvalues $0$ and $Nw$ (multiplicity $N-1$). Removing a vertex leaves $K_{N-1}$. \qed
+
+\end{document}

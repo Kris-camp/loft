@@ -1,0 +1,6 @@
+pin_theory=0.6796 pin_sim=0.6884
+qcrit=0.250
+hl_fix=13.9 hl_dep=370.0 peak_fix=103.9 peak_dep=206.9 theory_hl=13.9
+Symmetric: impact multiplier median=19.82 true=20.00; linear k median=0.0147
+Asymmetric: impact multiplier median=12.26 true=12.50; linear k median=0.0105
+Low capacity: impact multiplier median=63.90 true=66.67; linear k median=0.0075
