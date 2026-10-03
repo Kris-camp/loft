@@ -37,7 +37,7 @@
 \title{\textbf{Who Discovers the Dollar?}\\[4pt]
 \large Banking Rails and Arbitrage in Stablecoin Markets}
 
-\author{Jiayi Wang\thanks{University of Technology Sydney. Email: \href{mailto:Jiayi.Wang-1@student.uts.edu.au}{Jiayi.Wang-1@student.uts.edu.au}.} \and Lanxin Zhao\thanks{The University of Sydney. Email: \href{mailto:lzha6608@uni.sydney.edu.au}{lzha6608@uni.sydney.edu.au}. All errors are our own.}}
+\author{Jiayi Wang\thanks{University of Technology Sydney. Email: \href{mailto:Jiayi.Wang-1@student.uts.edu.au}{Jiayi.Wang-1@student.uts.edu.au}.} and Lanxin Zhao\thanks{The University of Sydney. Email: \href{mailto:lzha6608@uni.sydney.edu.au}{lzha6608@uni.sydney.edu.au}. All errors are our own.}}
 
 \date{This version: October 3, 2026}
 
@@ -70,7 +70,7 @@ db_t = \beta q_t\,dt - \kappa\,\sgn(b_t)\pos{|b_t|-c}\,dt + \sigma\,dW_t ,\qquad
 \]
 Inside the band $[-c,c]$ the premium is a martingale; outside it the excess decays at rate $\kappa$. With persistent order flow the premium settles at $b^* = c + \beta q/\kappa$, so the long-run price impact of order flow is $\beta/\kappa$, while steady-state arbitrage volume, $\beta q/\lambda$, does not depend on capacity: trading volume measures demand, and the premium measures capacity. A local information shock of size $\delta$ reaches the global price in proportion $\omega(1-c/\delta)_+(1-e^{-\kappa h})$ by horizon $h$, so the friction sets how much local information is transmitted and capacity sets how fast.
 
-The mechanism is identified from three sides, using one-minute Binance data on USDT against the Turkish lira and one-minute interbank USD/TRY quotes from January 2024 to August 2026 (Figure~\ref{fig:hero}).
+The mechanism is identified from complementary evidence in prices, trades, cross-country variation, and price discovery, using one-minute Binance data on USDT against the Turkish lira and one-minute interbank USD/TRY quotes from January 2024 to August 2026 (Figure~\ref{fig:hero}).
 
 \emph{Price evidence.} The premium shows no mean reversion inside a band of median width 32 bp and reverts outside it; linear error correction is rejected. Above the band, the premium reverts three to five times faster when Istanbul banks are open; below the band the difference has the same sign and is estimated less precisely. Bands estimated separately for open and closed hours are wider at night on average, and the speed difference holds with them, so banking hours raise effective capacity over and above any effect on the friction. The difference is as large when the interbank market is actively quoted. In Mexico, where the central bank's settlement system runs around the clock, the same construction shows a much smaller day--night difference: arbitrage at night retains nearly two thirds of its daytime speed in Mexico and about one twentieth in Turkey, and the difference in open-to-closed ratios is significant.
 
