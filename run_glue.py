@@ -34,6 +34,7 @@ import datasets
 import evaluate
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 import yaml
 from datasets import load_dataset
 from torch import optim
@@ -339,7 +340,7 @@ class PEFTArguments:
     )
     loft_pr_init: Optional[str] = field(
         default="svd",
-        metadata={"help": "LOFT fixed-P init: principal/svd or random"}
+        metadata={"help": "LOFT fixed-P init: principal (svd), grad_svd (GradSVD), wg_skew (SkewGrad), random or perm"}
     )
     loft_use_cayley_neumann: Optional[bool] = field(
         default=True,
@@ -380,6 +381,103 @@ def _matches_loft_target_module(module_name, target_modules):
     if isinstance(target_modules, str):
         target_modules = [target_modules]
     return any(module_name == t or module_name.endswith(f".{t}") for t in target_modules)
+
+
+def collect_loft_grad_batches_right(model, train_dataset, data_collator, target_modules, num_batches=4, batch_size=32):
+    """
+    One-shot calibration for LOFT grad_svd:
+    accumulate weight gradients on a few mini-batches BEFORE fixed-P LOFT insertion,
+    then use their top-r right singular subspaces as fixed P.
+
+    Returns:
+        grad_map: dict[module_name -> grad_tensor_cpu_float32], normalized to (out, in).
+    """
+    print(f"[LOFT_DEBUG] collect_loft_grad_batches_right entered: num_batches={num_batches}, batch_size={batch_size}", flush=True)
+    if train_dataset is None:
+        raise ValueError("grad_svd requires a non-empty train_dataset.")
+
+    target_names = []
+    name_to_module = {}
+
+    try:
+        from peft.tuners.lora.layer import Linear as PeftLoraLinear
+        linear_types = (torch.nn.Linear, PeftLoraLinear)
+    except Exception:
+        linear_types = (torch.nn.Linear,)
+
+    for name, module in model.named_modules():
+        is_target = _matches_loft_target_module(name, target_modules)
+        is_linear = isinstance(module, linear_types)
+        if is_target and is_linear:
+            target_names.append(name)
+            name_to_module[name] = module
+
+    print(f"[LOFT_DEBUG] collect targets: n={len(target_names)} first={target_names[:8]}", flush=True)
+    if not target_names:
+        raise RuntimeError(f"No target linear modules found for target_modules={target_modules}")
+
+    device = next(model.parameters()).device
+    was_training = model.training
+    original_requires_grad = {name: p.requires_grad for name, p in model.named_parameters()}
+
+    for p in model.parameters():
+        p.requires_grad_(False)
+
+    for name in target_names:
+        name_to_module[name].weight.requires_grad_(True)
+
+    loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        collate_fn=data_collator,
+    )
+
+    grad_map = {name: None for name in target_names}
+
+    model.train()
+    model.zero_grad(set_to_none=True)
+
+    for step, batch in enumerate(loader):
+        if step >= num_batches:
+            break
+
+        batch = {k: (v.to(device) if torch.is_tensor(v) else v) for k, v in batch.items()}
+        batch.pop("idx", None)
+
+        outputs = model(**batch)
+        loss = outputs.loss if getattr(outputs, "loss", None) is not None else outputs[0]
+        loss.backward()
+
+        for name in target_names:
+            module = name_to_module[name]
+            g = module.weight.grad
+            if g is None:
+                continue
+
+            fan_in_fan_out = getattr(module, "fan_in_fan_out", False)
+            g = (g.t() if fan_in_fan_out else g).detach().float().cpu()
+
+            if grad_map[name] is None:
+                grad_map[name] = g.clone()
+            else:
+                grad_map[name] = grad_map[name] + g
+
+        model.zero_grad(set_to_none=True)
+
+    for name, p in model.named_parameters():
+        p.requires_grad_(original_requires_grad[name])
+
+    if not was_training:
+        model.eval()
+
+    missing = [name for name, g in grad_map.items() if g is None]
+    if missing:
+        raise RuntimeError(f"grad_svd missing gradients for target modules: {missing[:8]}")
+
+    return grad_map
+
+
 
 
 def _debug_dump_trainables(model, tag, limit=40):
@@ -720,22 +818,28 @@ def main():
         )
         model = get_peft_model(model, config)
 
-        loft_pr_init = getattr(peft_args, "loft_pr_init", "svd")
-        loft_pr_init = str(loft_pr_init).lower()
+        loft_pr_init = str(getattr(peft_args, "loft_pr_init", "svd")).lower()
         if loft_pr_init in {"principal", "principle"}:
             loft_pr_init = "svd"
-        if loft_pr_init not in {"svd", "random"}:
-            raise ValueError("LOFT --loft_pr_init must be 'principal'/'svd' or 'random'.")
+        if loft_pr_init not in {"svd", "grad_svd", "wg_skew", "random", "perm"}:
+            raise ValueError("LOFT --loft_pr_init must be principal/svd, grad_svd, wg_skew, random or perm.")
+        peft_args.loft_pr_init = loft_pr_init
         loft_peft_config = config
-        create_and_insert_loft_fixedP(
-            model=model,
-            peft_config=loft_peft_config,
-            Pr_init=loft_pr_init,
-            seed=training_args.seed,
-            orth=getattr(peft_args, "loft_ortho", True),
-            use_cayley_neumann=getattr(peft_args, "loft_use_cayley_neumann", True),
-            num_cayley_neumann_terms=getattr(peft_args, "loft_num_cayley_neumann_terms", 5),
-        )
+        loft_grad_map = None
+        print(f"[LOFT_DEBUG] entered loft branch: loft_pr_init={loft_pr_init}, seed={training_args.seed}", flush=True)
+        if loft_pr_init in {"grad_svd", "wg_skew"}:
+            print("[LOFT] Deferring grad_svd calibration until train_dataset/data_collator are built...")
+        else:
+            create_and_insert_loft_fixedP(
+                model=model,
+                peft_config=loft_peft_config,
+                Pr_init=loft_pr_init,
+                grad_map=None,
+                seed=training_args.seed,
+                orth=getattr(peft_args, "loft_ortho", True),
+                use_cayley_neumann=getattr(peft_args, "loft_use_cayley_neumann", True),
+                num_cayley_neumann_terms=getattr(peft_args, "loft_num_cayley_neumann_terms", 5),
+            )
 
         # n_loft = 0
         # for n, p in model.named_parameters():
@@ -765,8 +869,46 @@ def main():
         non_classifier_trainable_params = 0
         all_param = 0
 
+        if peft_name == "loft" and getattr(peft_args, "loft_pr_init", "svd") in {"grad_svd", "wg_skew"}:
+            if "loft_peft_config" not in locals():
+                raise RuntimeError("LOFT grad_svd expects loft_peft_config to be defined earlier in the loft branch.")
+
+            print("[LOFT_DEBUG] about to collect grad_svd", flush=True)
+            print("[LOFT] Collecting grad_svd calibration subspaces from 4 batches...", flush=True)
+            loft_grad_map = collect_loft_grad_batches_right(
+                model=model,
+                train_dataset=train_dataset,
+                data_collator=data_collator,
+                target_modules=loft_peft_config.target_modules,
+                num_batches=4,
+                batch_size=training_args.per_device_train_batch_size,
+            )
+            print(f"[LOFT] Collected grad_svd maps for {len(loft_grad_map)} target linear layers.", flush=True)
+            print(f"[LOFT_DEBUG] collected grad_svd keys head={list(loft_grad_map.keys())[:8]}", flush=True)
+            _debug_dump_loft_modules(model, "before_grad_insert", loft_peft_config.target_modules)
+            _debug_dump_trainables(model, "before_grad_insert")
+
+            create_and_insert_loft_fixedP(
+                model=model,
+                peft_config=loft_peft_config,
+                Pr_init=loft_pr_init,
+                grad_map=loft_grad_map,
+                seed=training_args.seed,
+                orth=getattr(peft_args, "loft_ortho", True),
+                use_cayley_neumann=getattr(peft_args, "loft_use_cayley_neumann", True),
+                num_cayley_neumann_terms=getattr(peft_args, "loft_num_cayley_neumann_terms", 5),
+            )
+
+            _debug_dump_loft_modules(model, "after_grad_insert", loft_peft_config.target_modules)
+            _debug_dump_trainables(model, "after_grad_insert")
+
         trainable_param_details = []
 
+        print(
+            f"[LOFT_DEBUG] entering manual param scan: peft_name={peft_name}, "
+            f"loft_pr_init={getattr(peft_args, 'loft_pr_init', 'NA')}",
+            flush=True,
+        )
         if peft_name == "loft" and "loft_peft_config" in locals():
             _debug_dump_loft_modules(model, "before_manual_param_scan", loft_peft_config.target_modules)
         _debug_dump_trainables(model, "before_manual_param_scan")

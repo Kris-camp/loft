@@ -74,8 +74,12 @@ Main LOFT flags:
 |---|---|
 | Principal support | --loft_pr_init principal |
 | Random support | --loft_pr_init random |
+| GradSVD support | --loft_pr_init grad_svd |
+| SkewGrad support | --loft_pr_init wg_skew |
 | Orthogonal transform | --loft_ortho True |
 | Free transform | --loft_ortho False |
+
+GradSVD and SkewGrad build the fixed support from the weight gradients of each target matrix, accumulated in FP32 over the first 4 training mini-batches before LOFT is inserted (Appendix D of the paper). SkewGrad takes the top-r eigenvectors of C = S^T S with S = skew(W0^T G); use an even rank r.
 
 ## Example CoLA command
 
@@ -120,6 +124,10 @@ For a short smoke test, add:
 ## Notes
 
 This is a compact initial LOFT code release. Do not commit model weights, checkpoints, W&B logs, HuggingFace caches, or experiment outputs.
+
+## License
+
+The LOFT code in this repository is released under the Apache License 2.0 (see `LICENSE`). Third-party code keeps its original license; see `THIRD_PARTY_NOTICES.md`.
 
 ## Acknowledgements
 
