@@ -120,3 +120,7 @@ For a short smoke test, add:
 ## Notes
 
 This is a compact initial LOFT code release. Do not commit model weights, checkpoints, W&B logs, HuggingFace caches, or experiment outputs.
+
+## Acknowledgements
+
+The GLUE training script is modified from the HuggingFace Transformers example `run_glue.py` (Apache-2.0) via the PSOFT implementation (MIT, https://github.com/fei407/PSOFT). Their copyright and license notices are in `THIRD_PARTY_NOTICES.md`.
